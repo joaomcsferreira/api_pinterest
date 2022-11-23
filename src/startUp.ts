@@ -1,12 +1,9 @@
-import express, {
-  Application,
-  NextFunction,
-  Request,
-  response,
-  Response,
-} from "express"
+import express, { Application, NextFunction, Request, Response } from "express"
+
+import "./shared/container"
 
 import Database from "./infra/database"
+import userRouter from "./routes/user.routes"
 
 class StartUp {
   public app: Application
@@ -32,6 +29,8 @@ class StartUp {
     this.app.route("/").get((request: Request, response: Response) => {
       response.send({ version: "0.0.1" })
     })
+
+    this.app.use("/", userRouter)
   }
 }
 
