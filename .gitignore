@@ -27,7 +27,8 @@ node_modules
 bower_components
 
 # static files directory
-uploads/
+uploads/*
+!uploads/*/.gitkeep
 
 # Editors
 .idea
