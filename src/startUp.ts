@@ -1,4 +1,5 @@
 import express, { Application, NextFunction, Request, Response } from "express"
+import multer from "multer"
 
 import "./shared/container"
 
@@ -7,11 +8,15 @@ import userRouter from "./routes/user.routes"
 
 class StartUp {
   public app: Application
+  public upload
   private _db: Database = new Database()
 
   constructor() {
     this.app = express()
+    this.upload = multer()
     this.app.use(express.json())
+    this.app.use(express.urlencoded({ extended: true }))
+    this.app.use("/uploads", express.static("./uploads"))
     this.app.use((req: Request, res: Response, next: NextFunction) => {
       res.header("Access-Control-Allow-Origin", "http://localhost:3000")
       res.header(
