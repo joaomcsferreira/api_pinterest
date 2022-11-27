@@ -1,5 +1,6 @@
 import { User, UserClean } from "../models/user.model"
 import { UserRepository } from "../repositories/user.repository"
+import { decodedToken } from "../utils/jwt"
 
 interface userExistProps {
   username?: string
@@ -9,8 +10,12 @@ interface userExistProps {
 }
 
 export class UserService {
-  async getUser(token: String): Promise<User> {
-    throw new Error("Method not implemented.")
+  async getUser(token: string): Promise<UserClean> {
+    const userId = decodedToken(token)
+
+    const user = await this.userExist({ id: userId })
+
+    return user
   }
 
   async getProfile(username: String): Promise<UserClean> {
