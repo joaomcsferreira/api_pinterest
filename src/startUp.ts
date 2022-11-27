@@ -4,7 +4,9 @@ import multer from "multer"
 import "./shared/container"
 
 import Database from "./infra/database"
+
 import userRouter from "./routes/user.routes"
+import boardRouter from "./routes/board.routes"
 
 class StartUp {
   public app: Application
@@ -36,6 +38,7 @@ class StartUp {
     })
 
     this.app.use("/", userRouter)
+    this.app.use("/", boardRouter)
   }
 }
 
