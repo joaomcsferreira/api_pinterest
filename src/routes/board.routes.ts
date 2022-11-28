@@ -11,7 +11,7 @@ boardRouter
   .post((req: Request, res: Response) => board.createBoard(req, res))
 
 boardRouter
-  .route("/api/v1/boards/:id")
+  .route("/api/v1/user/:id/boards")
   .get((req: Request, res: Response) => board.getBoards(req, res))
 
 boardRouter

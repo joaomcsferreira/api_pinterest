@@ -7,6 +7,8 @@ import Database from "./infra/database"
 
 import userRouter from "./routes/user.routes"
 import boardRouter from "./routes/board.routes"
+import pinRouter from "./routes/pin.routes"
+import commentRouter from "./routes/comment.routes"
 
 class StartUp {
   public app: Application
@@ -39,6 +41,8 @@ class StartUp {
 
     this.app.use("/", userRouter)
     this.app.use("/", boardRouter)
+    this.app.use("/", pinRouter)
+    this.app.use("/", commentRouter)
   }
 }
 
