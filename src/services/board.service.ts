@@ -21,14 +21,14 @@ export class BoardService {
     return result
   }
 
-  async getBoardUser(id: string): Promise<String> {
-    const result = await BoardRepository.findOne({ _id: id }).populate("user")
-
-    return result?.user.id
-  }
-
   async deleteBoard(id: String): Promise<Board> {
     const result = await BoardRepository.findByIdAndDelete(id)
+
+    return result as Board
+  }
+
+  async getBoard(name: String, user: UserClean): Promise<Board> {
+    const result = await BoardRepository.findOne({ name, user })
 
     return result as Board
   }

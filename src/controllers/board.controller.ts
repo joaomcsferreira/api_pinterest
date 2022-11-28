@@ -16,15 +16,15 @@ export class BoardController {
       const token = req.headers.authorization!
 
       const user = await this._userService.getUser(token)
+      const board = await this._service.getBoard(name, user)
+
+      if (board) throw new Error("Board already exist")
 
       const result = await this._service.createBoard(name, user)
 
       res.status(200).json({ result })
     } catch (error: any) {
-      if (["E11000", "name"].every((value) => error.message.includes(value)))
-        error.message = "Board already exist"
-      else error.message = error.toString()
-      res.status(500).json({ error: error.message })
+      res.status(500).json({ error: error.message || error.toString() })
     }
   }
 
@@ -46,12 +46,12 @@ export class BoardController {
 
       const token = req.headers.authorization!
 
-      const { _id: userId } = await this._userService.getUser(token)
-      const boardUserId = await this._service.getBoardUser(id)
+      const user = await this._userService.getUser(token)
+      const board = await this._service.getBoard(id, user)
 
-      if (!boardUserId) throw new Error("Board don't exist!")
+      if (!board) throw new Error("Board don't exist!")
 
-      if (userId != boardUserId) {
+      if (user._id != board.user.id) {
         throw new Error("You don't have authorization")
       }
 
