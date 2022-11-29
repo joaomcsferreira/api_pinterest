@@ -1,5 +1,6 @@
 import express, { Application, NextFunction, Request, Response } from "express"
 import multer from "multer"
+import dotenv from "dotenv"
 
 import "./shared/container"
 
@@ -9,6 +10,8 @@ import userRouter from "./routes/user.routes"
 import boardRouter from "./routes/board.routes"
 import pinRouter from "./routes/pin.routes"
 import commentRouter from "./routes/comment.routes"
+
+dotenv.config()
 
 class StartUp {
   public app: Application

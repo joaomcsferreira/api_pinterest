@@ -1,7 +1,6 @@
-import jwt, { Jwt } from "jsonwebtoken"
-import { User } from "../models/user.model"
+import jwt from "jsonwebtoken"
 
-const SECRET = "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpIiwiaWF0IjoxNTE2M"
+const SECRET = process.env.SECRET_KEY as string
 
 const createToken = (email: String, username: String, _id: String): String => {
   const token = jwt.sign(
