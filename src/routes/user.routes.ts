@@ -8,27 +8,31 @@ const userRouter = express()
 const user = container.resolve(UserController)
 
 userRouter
-  .route("/api/v1/user/:username")
+  .route("/user/:username")
   .get((req: Request, res: Response) => user.getProfile(req, res))
 
 userRouter
-  .route("/api/v1/validate")
+  .route("/validate")
   .get((req: Request, res: Response) => user.validateUser(req, res))
 
 userRouter
-  .route("/api/v1/user")
+  .route("/user")
   .post((req: Request, res: Response) => user.createUser(req, res))
 
 userRouter
-  .route("/api/v1/user/token")
+  .route("/user/token")
   .post((req: Request, res: Response) => user.getToken(req, res))
 
 userRouter
-  .route("/api/v1/user")
+  .route("/user")
   .put(uploadAvatar, (req: Request, res: Response) => user.updateUser(req, res))
 
 userRouter
-  .route("/api/v1/user/:id")
+  .route("/user")
   .delete((req: Request, res: Response) => user.deleteUser(req, res))
+
+userRouter
+  .route("/users")
+  .get((req: Request, res: Response) => user.getUsers(req, res))
 
 export default userRouter

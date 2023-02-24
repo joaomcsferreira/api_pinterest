@@ -4,6 +4,10 @@ import { BoardService } from "../services/board.service"
 
 import { PinService } from "../services/pin.service"
 import { UserService } from "../services/user.service"
+import { PinFields } from "../types"
+
+import { getTypesProps } from "../services/pin.service"
+import { cannotBlank } from "../utils/validationFields"
 
 interface MulterRequest extends Request {
   file: any
@@ -19,9 +23,31 @@ export class PinController {
 
   async getPins(req: Request, res: Response) {
     try {
-      const result = await this._service.getPins()
+      const { user, board } = req.query as { user: string; board: string }
+      const total = Number.parseInt(req.query.total as string)
+      const type = req.query.type as getTypesProps
 
-      res.status(200).json({ result })
+      const userId = await this._userService.userExist({
+        type: "username",
+        payload: { username: user },
+      })
+
+      if (!userId && type === "user")
+        throw new Error("The User you tried to access does not exist.")
+
+      const boardId = await this._boardService.getBoard(board, userId?._id)
+
+      if (!boardId && type === "board")
+        throw new Error("The Board you tried to access does not exist.")
+
+      const result = await this._service.getPins({
+        type,
+        total,
+        user: userId?._id,
+        board: boardId?._id,
+      })
+
+      res.status(202).json({ result })
     } catch (error: any) {
       res.status(500).json({ error: error.message || error.toString() })
     }
@@ -33,11 +59,11 @@ export class PinController {
 
       const result = await this._service.getPin(id)
 
-      if (!result) throw new Error("Pin not found!")
+      if (!result) throw new Error("The Pin you tried to access doesn't exist.")
 
-      res.status(200).json({ result })
+      res.status(202).json({ result })
     } catch (error: any) {
-      res.status(500).json({ error: error.message || error.toString() })
+      res.status(404).json({ error: error.message || error.toString() })
     }
   }
 
@@ -47,56 +73,66 @@ export class PinController {
       const src = (req as MulterRequest).file?.path.replaceAll("\\", "/")
       const token = req.headers.authorization!
 
-      const user = await this._userService.getUser(token)
-      const board = await this._boardService.getBoard(boardName, user)
+      if (!boardName) throw new Error(cannotBlank("board"))
+      if (!title) throw new Error(cannotBlank("title"))
 
-      if (!board) throw new Error("Board not exist.")
+      const user = await this._userService.getUser(token)
+
+      if (!user) throw new Error("The User you tried to access does not exist.")
+
+      const board = await this._boardService.getBoard(boardName, user._id)
+
+      if (!board)
+        throw new Error("The Board you tried to access does not exist.")
 
       const result = await this._service.createPin(
         title,
         description,
         website,
-        board,
+        board._id,
         src,
-        user
+        user._id
       )
 
-      res.status(200).json({ result })
+      res.status(201).json({ result })
     } catch (error: any) {
-      res.status(500).json({ error: error.message || error.toString() })
+      res.status(404).json({ error: error.message || error.toString() })
     }
   }
 
   async updatePin(req: Request, res: Response) {
     try {
-      const { id } = req.params
-      const { title, description, website, board: boardName } = req.body
+      const { id, title, description, website, board: boardName } = req.body
       const token = req.headers.authorization!
 
       const user = await this._userService.getUser(token)
-      const pin = await this._service.getPin(id)
-      const board = await this._boardService.getBoard(boardName, user)
 
-      if (!pin) throw new Error("Pin not found.")
+      if (!user) throw new Error("The User you tried to access does not exist.")
 
-      if (user._id != pin.user.id) {
-        throw new Error("You don't have authorization.")
-      }
+      const current_pin = await this._service.getPin(id)
 
-      const pinClean = {
-        title: title ? title.toLocaleLowerCase() : pin.title,
+      if (!current_pin)
+        throw new Error("The Pin you tried to access does not exist.")
+
+      const board = await this._boardService.getBoard(boardName, user._id)
+
+      if (!board)
+        throw new Error("The Board you tried to access does not exist.")
+
+      const pin: PinFields = {
+        title: title ? title.toLocaleLowerCase() : current_pin.title,
         description: description
           ? description.toLocaleLowerCase()
-          : pin.description,
-        website: website ? website.toLocaleLowerCase() : pin.website,
-        board: board || pin.board,
+          : current_pin.description,
+        website: website ? website.toLocaleLowerCase() : current_pin.website,
+        board: board || current_pin.board,
       }
 
-      const result = await this._service.updatePin(id, pinClean)
+      const result = await this._service.updatePin(id, pin)
 
-      res.status(200).json({ result })
+      res.status(202).json({ result })
     } catch (error: any) {
-      res.status(500).json({ error: error.message || error.toString() })
+      res.status(401).json({ error: error.message || error.toString() })
     }
   }
 
@@ -106,18 +142,18 @@ export class PinController {
       const token = req.headers.authorization!
 
       const user = await this._userService.getUser(token)
+
+      if (!user) throw new Error("The User you tried to access does not exist.")
+
       const pin = await this._service.getPin(id)
 
-      if (!pin) throw new Error("Pin not found.")
+      if (!pin) throw new Error("The Pin you tried to access does not exist.")
 
-      if (user._id != pin.user.id)
-        throw new Error("You don't have autorization.")
-
-      const result = await this._service.deletePin(id)
+      const result = await this._service.deletePin(id, user._id)
 
       res.status(200).json({ result })
     } catch (error: any) {
-      res.status(500).json({ error: error.message || error.toString() })
+      res.status(404).json({ error: error.message || error.toString() })
     }
   }
 }

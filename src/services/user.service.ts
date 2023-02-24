@@ -1,89 +1,102 @@
-import { User, UserClean } from "../models/user.model"
+import { ObjectId } from "mongoose"
+import { User } from "../models/user.model"
+
 import { UserRepository } from "../repositories/user.repository"
+import { UserFields } from "../types"
 import { decodedToken } from "../utils/jwt"
 
 interface userExistProps {
-  username?: string
-  password?: string
-  email?: string
-  id?: string
+  type: "email" | "password" | "username" | "id"
+  payload: {
+    username?: string
+    email?: string
+    password?: string
+    id?: ObjectId
+  }
 }
 
 export class UserService {
-  async getUser(token: string): Promise<UserClean> {
-    const userId = decodedToken(token)
+  async getUsers(): Promise<Array<User>> {
+    const result = await UserRepository.find()
 
-    const user = await this.userExist({ id: userId })
+    return result
+  }
+
+  async getUser(token: string): Promise<User | null> {
+    const id = decodedToken(token)
+
+    const user = await this.userExist({ type: "id", payload: { id } })
 
     return user
   }
 
-  async getProfile(username: String): Promise<UserClean> {
+  async getProfile(username: string): Promise<User | null> {
     const result = await UserRepository.findOne({ username })
 
-    const cleanUser: UserClean = {
-      _id: result?._id,
-      email: result?.email || "",
-      username: result?.username || "",
-      firstName: result?.firstName || "",
-      lastName: result?.lastName || "",
-      avatar: result?.avatar || "",
-    }
-
-    return cleanUser
+    return result
   }
 
-  async getToken(email: String, password: String): Promise<String> {
+  async getToken(email: string, password: string): Promise<string> {
     throw new Error("Method not implemented.")
   }
 
-  async createUser(
-    email: String,
-    password: String,
-    username: String
-  ): Promise<UserClean> {
-    let result = await UserRepository.create({
+  async createUser(email: string, password: string): Promise<User> {
+    const result = await UserRepository.create({
       email: email.toLocaleLowerCase(),
+      username: email.split("@")[0].toLocaleLowerCase(),
       password: password.toLocaleLowerCase(),
-      username: username.toLocaleLowerCase(),
     })
 
     return result
   }
 
-  async updateUser(id: String, user: UserClean): Promise<User> {
+  async updateUser(id: ObjectId, user: UserFields): Promise<User | null> {
     const result = await UserRepository.findByIdAndUpdate(id, user)
 
-    return result as User
+    return result
   }
 
-  async deleteUser(id: String): Promise<User> {
-    const result = await UserRepository.findByIdAndDelete(id)
+  async deleteUser(username: string): Promise<string> {
+    await UserRepository.deleteOne({ username })
 
-    return result as User
+    return `The User ${username} has been deleted.`
   }
 
-  async userExist({
-    username,
-    password,
-    email,
-    id,
-  }: userExistProps): Promise<UserClean> {
+  async userExist({ type, payload }: userExistProps): Promise<User | null> {
     let result
 
-    if (username) result = await UserRepository.findOne({ username })
-    else if (email) result = await UserRepository.findOne({ email, password })
-    else result = await UserRepository.findOne({ _id: id })
-
-    const cleanUser: UserClean = {
-      _id: result?._id,
-      email: result?.email || "",
-      username: result?.username || "",
-      firstName: result?.firstName || "",
-      lastName: result?.lastName || "",
-      avatar: result?.avatar || "",
+    switch (type) {
+      case "email":
+        result = await UserRepository.findOne({ email: payload.email })
+        break
+      case "password":
+        result = await UserRepository.findOne({
+          email: payload.email,
+          password: payload.password,
+        })
+        break
+      case "username":
+        result = await UserRepository.findOne({ username: payload.username })
+        break
+      case "id":
+        result = await UserRepository.findOne({ _id: payload.id })
+        break
     }
 
-    return cleanUser
+    return result
+  }
+
+  userDisplay = (user: User) => {
+    const userDisplay = {
+      _id: user._id,
+      email: user.email,
+      username: user.username,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      avatar: user.avatar,
+      createdAt: user.createdAt,
+    }
+
+    return userDisplay
   }
 }

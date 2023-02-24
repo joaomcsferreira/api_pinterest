@@ -1,41 +1,75 @@
-import { Board } from "../models/board.model"
+import { ObjectId } from "mongoose"
 import { Pin } from "../models/pin.model"
-import { UserClean } from "../models/user.model"
-import { PinRepository } from "../repositories/pin.repository"
 
-interface pinCleanProps {
-  title: String
-  description: String
-  website: String
-  board: Board
+import { PinRepository } from "../repositories/pin.repository"
+import { PinFields } from "../types"
+
+export type getTypesProps = "all" | "user" | "board"
+
+interface getPinsProps {
+  type: getTypesProps
+  user?: string
+  board?: string
+  total?: number
 }
 
 export class PinService {
-  async getPins(): Promise<Array<Pin>> {
-    const result = await PinRepository.find({})
-      .populate("user", "email username")
-      .populate("board", "name")
-      .populate("comments", "text user")
+  async getPins({
+    type,
+    total,
+    user,
+    board,
+  }: getPinsProps): Promise<Array<Pin>> {
+    let response: Array<Pin>
 
-    return result
+    switch (type) {
+      case "all":
+        response = await PinRepository.find({}).populate(
+          "user",
+          "email username firstName lastName avatar"
+        )
+        break
+
+      case "board":
+        response = await PinRepository.find({
+          board,
+          user,
+        }).populate("user", "email username firstName lastName avatar")
+
+        break
+
+      case "user":
+        response = await PinRepository.find({ user })
+          .populate("user", "email username firstName lastName avatar")
+          .populate("board", "name")
+        break
+    }
+
+    return total ? response.slice(0, total) : response
   }
 
-  async getPin(id: String): Promise<Pin> {
+  async getPin(id: string): Promise<Pin | null> {
     const result = await PinRepository.findOne({ _id: id })
-      .populate("user", "email username")
+      .populate("user", "email username firstName lastName avatar")
       .populate("board", "name")
-      .populate("comments", "text user")
+      .populate({
+        path: "comments",
+        populate: {
+          path: "user",
+          select: "_id username firstName lastName avatar",
+        },
+      })
 
-    return result as Pin
+    return result
   }
 
   async createPin(
     title: String,
     description: String,
     website: String,
-    board: Board,
+    board: ObjectId,
     src: string,
-    user: UserClean
+    user: ObjectId
   ): Promise<Pin> {
     const result = await PinRepository.create({
       title,
@@ -49,34 +83,46 @@ export class PinService {
     return result
   }
 
-  async updatePin(id: String, pinClean: pinCleanProps): Promise<Pin> {
-    const result = await PinRepository.findByIdAndUpdate(id, pinClean)
+  async updatePin(id: ObjectId, pin: PinFields): Promise<Pin | null> {
+    const result = await PinRepository.findByIdAndUpdate(id, pin)
 
-    return result as Pin
+    return result
   }
 
-  async deletePin(id: String): Promise<Pin> {
-    const result = await PinRepository.findByIdAndDelete(id)
+  async deletePin(id: string, userId: ObjectId): Promise<string> {
+    await PinRepository.deleteOne({ _id: id, user: userId })
 
-    return result as Pin
+    return `The Pin ${id} has been deleted.`
   }
 
-  async addCommentFromPin(id: String, comment: String): Promise<Pin> {
-    const result = await PinRepository.findOneAndUpdate(
+  async addCommentFromPin(id: ObjectId, comment: ObjectId) {
+    await PinRepository.findOneAndUpdate(
       { _id: id },
       { $push: { comments: comment } },
       { new: true }
     )
-
-    return result as Pin
   }
 
-  async removeCommentFromPin(pinId: String, id: String): Promise<Pin> {
-    const result = await PinRepository.findOneAndUpdate(
+  async removeCommentFromPin(pinId: string, id: ObjectId) {
+    await PinRepository.findOneAndUpdate(
       { _id: pinId },
       { $pull: { comments: { _id: id } } }
     )
+  }
 
-    return result as Pin
+  pinDisplay(pin: Pin) {
+    const pinDisplay = {
+      _id: pin._id,
+      title: pin.title,
+      description: pin.description,
+      website: pin.website,
+      board: pin.board,
+      src: pin.src,
+      user: pin.user,
+      comments: pin.comments,
+      createdAt: pin.createdAt,
+    }
+
+    return pinDisplay
   }
 }

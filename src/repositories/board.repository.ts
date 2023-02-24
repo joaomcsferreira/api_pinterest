@@ -6,8 +6,9 @@ const BoardSchema = new mongoose.Schema<Board>({
   user: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
   createdAt: { type: Date, default: new Date() },
   updatedAt: { type: Date, default: new Date() },
+  pins: [{ type: mongoose.Schema.Types.ObjectId, ref: "board" }],
 })
 
-BoardSchema.index({ name: 1, user: 1 }, { unique: true })
+// BoardSchema.index({ name: 1, user: 1 }, { unique: true })
 
 export const BoardRepository = mongoose.model<Board>("board", BoardSchema)

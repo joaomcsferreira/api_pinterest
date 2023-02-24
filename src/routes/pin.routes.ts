@@ -8,23 +8,23 @@ const pinRouter = express()
 const pin = container.resolve(PinController)
 
 pinRouter
-  .route("/api/v1/pins")
+  .route("/pins")
   .get((req: Request, res: Response) => pin.getPins(req, res))
 
 pinRouter
-  .route("/api/v1/pin/:id")
+  .route("/pin/:id")
   .get((req: Request, res: Response) => pin.getPin(req, res))
 
 pinRouter
-  .route("/api/v1/pin")
+  .route("/pin")
   .post(uploadPin, (req: Request, res: Response) => pin.createPin(req, res))
 
 pinRouter
-  .route("/api/v1/pin/:id")
+  .route("/pin")
   .put((req: Request, res: Response) => pin.updatePin(req, res))
 
 pinRouter
-  .route("/api/v1/pin/:id")
+  .route("/pin/:id")
   .delete((req: Request, res: Response) => pin.deletePin(req, res))
 
 export default pinRouter

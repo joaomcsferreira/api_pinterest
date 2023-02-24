@@ -39,7 +39,7 @@ class StartUp {
 
   routes() {
     this.app.route("/").get((request: Request, response: Response) => {
-      response.send({ version: "0.0.1" })
+      response.send({ version: "0.0.2" })
     })
 
     this.app.use("/", userRouter)

@@ -7,15 +7,15 @@ const boardRouter = express()
 const board = container.resolve(BoardController)
 
 boardRouter
-  .route("/api/v1/board")
+  .route("/board")
   .post((req: Request, res: Response) => board.createBoard(req, res))
 
 boardRouter
-  .route("/api/v1/user/:id/boards")
+  .route("/boards/:username")
   .get((req: Request, res: Response) => board.getBoards(req, res))
 
 boardRouter
-  .route("/api/v1/board/:id")
+  .route("/board")
   .delete((req: Request, res: Response) => board.deleteBoard(req, res))
 
 export default boardRouter

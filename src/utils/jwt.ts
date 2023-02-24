@@ -1,12 +1,20 @@
-import jwt from "jsonwebtoken"
+import jwt, { JwtPayload } from "jsonwebtoken"
+import dotenv from "dotenv"
+import { ObjectId } from "mongoose"
+
+dotenv.config()
 
 const SECRET = process.env.SECRET_KEY as string
 
-const createToken = (email: String, username: String, _id: String): String => {
+const createToken = (
+  email: string,
+  username: string,
+  _id: ObjectId
+): string => {
   const token = jwt.sign(
     {
       userId: _id,
-      email,
+      email: email.toLocaleLowerCase(),
       username,
     },
     SECRET,
@@ -18,10 +26,10 @@ const createToken = (email: String, username: String, _id: String): String => {
   return token
 }
 
-const decodedToken = (token: string) => {
+const decodedToken = (token: string): ObjectId => {
   const decoded = jwt.verify(token, SECRET)
 
-  return (decoded as any).userId
+  return (decoded as JwtPayload).userId
 }
 
 export { createToken, decodedToken }

@@ -1,19 +1,15 @@
+import { Board } from "./board.model"
 import { Core } from "./core.model"
+import { Pin } from "./pin.model"
 
 export class User extends Core {
-  email: String
-  username: String
-  password: String
-  firstName: String
-  lastName: String
-  avatar: String
-}
-
-export class UserClean {
-  _id: String
-  email: String
-  username: String
-  firstName: String
-  lastName: String
-  avatar: String
+  email: string
+  username: string
+  password: string
+  firstName: string
+  lastName: string
+  isAdmin: boolean
+  avatar: string
+  pins: Array<Pin>
+  boards: Array<Board>
 }
