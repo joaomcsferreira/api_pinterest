@@ -218,6 +218,79 @@ export class UserController {
     }
   }
 
+  async followUser(req: Request, res: Response) {
+    try {
+      const { userIDFollowing, userIDFollowed } = req.body
+
+      const userFollowing = await this._service.userExist({
+        type: "id",
+        payload: { id: userIDFollowing },
+      })
+
+      if (!userFollowing)
+        throw new Error("The userFollowing you tried to access does not exist.")
+
+      const userFollowed = await this._service.userExist({
+        type: "id",
+        payload: { id: userIDFollowed },
+      })
+
+      if (!userFollowed)
+        throw new Error("The userFollowed you tried to access does not exist.")
+
+      if (userIDFollowed === userIDFollowing)
+        throw new Error("User cannot follow themselves.")
+
+      if (userFollowing.following.includes(userIDFollowed))
+        throw new Error("User is already following this account.")
+
+      const result = await this._service.followUser(
+        userIDFollowing,
+        userIDFollowed
+      )
+
+      res.status(200).json({ result })
+    } catch (error: any) {
+      res.status(404).json({ error: error.message || error.toString() })
+    }
+  }
+
+  async unfollowUser(req: Request, res: Response) {
+    try {
+      const { userIDFollowing, userIDFollowed } = req.body
+
+      const userFollowing = await this._service.userExist({
+        type: "id",
+        payload: { id: userIDFollowing },
+      })
+
+      if (!userFollowing)
+        throw new Error("The userFollowing you tried to access does not exist.")
+
+      const userFollowed = await this._service.userExist({
+        type: "id",
+        payload: { id: userIDFollowed },
+      })
+
+      if (!userFollowed)
+        throw new Error("The userFollowed you tried to access does not exist.")
+
+      if (!userFollowing.following.includes(userIDFollowed))
+        throw new Error(
+          "User cannot unfollow an account they were not following."
+        )
+
+      const result = await this._service.unfollowUser(
+        userIDFollowing,
+        userIDFollowed
+      )
+
+      res.status(200).json({ result })
+    } catch (error: any) {
+      res.status(404).json({ error: error.message || error.toString() })
+    }
+  }
+
   async validationFields({ type, payload }: validationFieldsProps) {
     const validationRules = {
       email: {

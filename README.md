@@ -59,6 +59,8 @@ npm start
   GET    | /user/:username
   GET    | /validate
   PUT    | /user
+  PUT    | /follow
+  PUT    | /unfollow
   DELETE | /user/:id
 +--------+-------------------------+
 

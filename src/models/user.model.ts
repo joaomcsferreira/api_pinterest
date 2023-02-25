@@ -10,6 +10,8 @@ export class User extends Core {
   lastName: string
   isAdmin: boolean
   avatar: string
+  following: Array<User>
+  followers: Array<User>
   pins: Array<Pin>
   boards: Array<Board>
 }

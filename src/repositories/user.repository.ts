@@ -11,6 +11,8 @@ const UserSchema = new mongoose.Schema<User>({
   firstName: { type: String },
   lastName: { type: String },
   avatar: { type: String },
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
   pins: [{ type: mongoose.Schema.Types.ObjectId, ref: "pin" }],
   boards: [{ type: mongoose.Schema.Types.ObjectId, ref: "board" }],
   createdAt: { type: Date, default: new Date() },

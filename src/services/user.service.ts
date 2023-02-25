@@ -56,6 +56,40 @@ export class UserService {
     return `The User ${id} has been deleted.`
   }
 
+  async followUser(userIDFollowing: string, userIDFollowed: string) {
+    const response = await UserRepository.findOneAndUpdate(
+      { _id: userIDFollowing },
+      { $push: { following: userIDFollowed } },
+      { new: true }
+    )
+
+    await UserRepository.findOneAndUpdate(
+      { _id: userIDFollowed },
+      {
+        $push: { followers: userIDFollowing },
+      },
+      { new: true }
+    )
+
+    return response
+  }
+
+  async unfollowUser(userIDFollowing: string, userIDFollowed: string) {
+    const response = await UserRepository.findOneAndUpdate(
+      { _id: userIDFollowing },
+      { $pull: { following: userIDFollowed } }
+    )
+
+    await UserRepository.findOneAndUpdate(
+      { _id: userIDFollowed },
+      {
+        $pull: { followers: userIDFollowing },
+      }
+    )
+
+    return response
+  }
+
   async userExist({ type, payload }: userExistProps): Promise<User | null> {
     let result
 

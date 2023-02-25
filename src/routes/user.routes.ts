@@ -31,4 +31,12 @@ userRouter
   .route("/user/:id")
   .delete((req: Request, res: Response) => user.deleteUser(req, res))
 
+userRouter
+  .route("/follow")
+  .put((req: Request, res: Response) => user.followUser(req, res))
+
+userRouter
+  .route("/unfollow")
+  .put((req: Request, res: Response) => user.unfollowUser(req, res))
+
 export default userRouter
