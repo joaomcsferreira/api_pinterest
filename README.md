@@ -68,7 +68,7 @@ npm start
 +--------+-------------------------+
   POST   | /pin
   GET    | /pin/:id
-  GET    | /pins
+  GET    | /pins?type=type&board=board&user=user
   PUT    | /pin/:id
   DELETE | /pin/:id
 +--------+-------------------------+

@@ -18,14 +18,6 @@ interface validationFieldsProps {
 export class UserController {
   constructor(@inject("IUserService") private _service: UserService) {}
 
-  async getUsers(req: Request, res: Response) {
-    const result = await this._service.getUsers()
-
-    const users = result.map((user) => this._service.userDisplay(user))
-
-    res.status(202).json({ users })
-  }
-
   async getProfile(req: Request, res: Response) {
     try {
       const { username } = req.params

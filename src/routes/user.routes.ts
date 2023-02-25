@@ -31,8 +31,4 @@ userRouter
   .route("/user/:id")
   .delete((req: Request, res: Response) => user.deleteUser(req, res))
 
-userRouter
-  .route("/users")
-  .get((req: Request, res: Response) => user.getUsers(req, res))
-
 export default userRouter

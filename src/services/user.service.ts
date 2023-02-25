@@ -16,12 +16,6 @@ interface userExistProps {
 }
 
 export class UserService {
-  async getUsers(): Promise<Array<User>> {
-    const result = await UserRepository.find()
-
-    return result
-  }
-
   async getUser(token: string): Promise<User | null> {
     const id = decodedToken(token)
 
