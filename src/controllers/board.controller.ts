@@ -55,7 +55,7 @@ export class BoardController {
 
   async deleteBoard(req: Request, res: Response) {
     try {
-      const { name } = req.body
+      const { name } = req.params
 
       const token = req.headers.authorization!
 

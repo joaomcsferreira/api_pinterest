@@ -15,7 +15,7 @@ commentRouter
   .get((req: Request, res: Response) => comment.getComments(req, res))
 
 commentRouter
-  .route("/comment")
+  .route("/pin/:id/comment/:commentId")
   .delete((req: Request, res: Response) => comment.deleteComment(req, res))
 
 export default commentRouter

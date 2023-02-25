@@ -59,20 +59,28 @@ export class CommentController {
 
   async deleteComment(req: Request, res: Response) {
     try {
-      const { pinId, id } = req.body
+      const { id, commentId } = req.params
+      const token = req.headers.authorization!
 
-      const pin = await this._pinService.getPin(pinId)
+      const pin = await this._pinService.getPin(id)
 
-      if (!pin) throw new Error("The User you tried to access does not exist.")
+      if (!pin) throw new Error("The Pin you tried to access does not exist.")
 
-      const comment = await this._service.getComment(id)
+      const comment = await this._service.getComment(commentId)
 
       if (!comment)
         throw new Error("The Comment you tried to access does not exist.")
 
-      const result = await this._service.deleteComment(id, comment.text)
+      const user = await this._userService.getUser(token)
 
-      await this._pinService.removeCommentFromPin(pinId, id)
+      if (!user) throw new Error("The User you tried to access does not exist.")
+
+      if (comment.user._id.toString() != user._id.toString())
+        throw new Error("You do not have authorization.")
+
+      const result = await this._service.deleteComment(commentId, comment.text)
+
+      await this._pinService.removeCommentFromPin(id, commentId)
 
       res.status(200).json({ result })
     } catch (error: any) {

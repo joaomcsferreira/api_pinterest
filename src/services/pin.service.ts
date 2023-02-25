@@ -83,7 +83,7 @@ export class PinService {
     return result
   }
 
-  async updatePin(id: ObjectId, pin: PinFields): Promise<Pin | null> {
+  async updatePin(id: string, pin: PinFields): Promise<Pin | null> {
     const result = await PinRepository.findByIdAndUpdate(id, pin)
 
     return result
@@ -103,10 +103,10 @@ export class PinService {
     )
   }
 
-  async removeCommentFromPin(pinId: string, id: ObjectId) {
+  async removeCommentFromPin(id: string, commentId: string) {
     await PinRepository.findOneAndUpdate(
-      { _id: pinId },
-      { $pull: { comments: { _id: id } } }
+      { _id: id },
+      { $pull: { comments: { _id: commentId } } }
     )
   }
 

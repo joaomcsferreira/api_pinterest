@@ -102,7 +102,8 @@ export class PinController {
 
   async updatePin(req: Request, res: Response) {
     try {
-      const { id, title, description, website, board: boardName } = req.body
+      const { id } = req.params
+      const { title, description, website, board: boardName } = req.body
       const token = req.headers.authorization!
 
       const user = await this._userService.getUser(token)
@@ -148,6 +149,9 @@ export class PinController {
       const pin = await this._service.getPin(id)
 
       if (!pin) throw new Error("The Pin you tried to access does not exist.")
+
+      if (pin.user._id.toString() != user._id.toString())
+        throw new Error("You do not have authorization.")
 
       const result = await this._service.deletePin(id, user._id)
 

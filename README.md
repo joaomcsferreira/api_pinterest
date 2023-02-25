@@ -54,41 +54,41 @@ npm start
 +--------+-------------------------+
   Method | URI
 +--------+-------------------------+
-  POST   | /api/v1/user
-  POST   | /api/v1/user/token
-  GET    | /api/v1/user/:username
-  GET    | /api/v1/validate
-  PUT    | /api/v1/user
-  DELETE | /api/v1/user/:id
+  POST   | /user
+  POST   | /user/token
+  GET    | /user/:username
+  GET    | /validate
+  PUT    | /user
+  DELETE | /user/:id
 +--------+-------------------------+
 
 # pin routes
 +--------+-------------------------+
   Method | URI
 +--------+-------------------------+
-  POST   | /api/v1/pin
-  GET    | /api/v1/pin/:id
-  GET    | /api/v1/pins
-  PUT    | /api/v1/pin/:id
-  DELETE | /api/v1/pin/:id
+  POST   | /pin
+  GET    | /pin/:id
+  GET    | /pins
+  PUT    | /pin/:id
+  DELETE | /pin/:id
 +--------+-------------------------+
 
 # board routes
 +--------+-------------------------+
   Method | URI
 +--------+-------------------------+
-  POST   | /api/v1/board
-  GET    | /api/v1/user/:id/boards
-  DELETE | /api/v1/board/:id
+  POST   | /board
+  GET    | /boards/:username
+  DELETE | /board/:id
 +--------+-------------------------+
 
 # comment routes
 +--------+-------------------------+
   Method | URI
 +--------+-------------------------+
-  POST   | /api/v1/pin/:id/comments
-  GET    | /api/v1/pin/:id/comments
-  DELETE | /api/v1/pin/:id/comments
+  POST   | /pin/
+  GET    | /pin/:id/comments
+  DELETE | /pin/:id/comment/:commentId
 +--------+-------------------------+
 
 ```

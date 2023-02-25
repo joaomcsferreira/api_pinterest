@@ -190,16 +190,16 @@ export class UserController {
 
   async deleteUser(req: Request, res: Response) {
     try {
-      const { username } = req.body
+      const { id } = req.params
 
       const user = await this._service.userExist({
-        type: "username",
-        payload: { username },
+        type: "id",
+        payload: { id },
       })
 
       if (!user) throw new Error("The User you tried to access does not exist.")
 
-      const result = await this._service.deleteUser(username)
+      const result = await this._service.deleteUser(id)
 
       res.status(200).json({ result })
     } catch (error: any) {

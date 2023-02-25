@@ -15,7 +15,7 @@ boardRouter
   .get((req: Request, res: Response) => board.getBoards(req, res))
 
 boardRouter
-  .route("/board")
+  .route("/board/:name")
   .delete((req: Request, res: Response) => board.deleteBoard(req, res))
 
 export default boardRouter

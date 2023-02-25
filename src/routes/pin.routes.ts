@@ -20,7 +20,7 @@ pinRouter
   .post(uploadPin, (req: Request, res: Response) => pin.createPin(req, res))
 
 pinRouter
-  .route("/pin")
+  .route("/pin/:id")
   .put((req: Request, res: Response) => pin.updatePin(req, res))
 
 pinRouter

@@ -11,7 +11,7 @@ interface userExistProps {
     username?: string
     email?: string
     password?: string
-    id?: ObjectId
+    id?: ObjectId | string
   }
 }
 
@@ -56,10 +56,10 @@ export class UserService {
     return result
   }
 
-  async deleteUser(username: string): Promise<string> {
-    await UserRepository.deleteOne({ username })
+  async deleteUser(id: string): Promise<string> {
+    await UserRepository.deleteOne({ _id: id })
 
-    return `The User ${username} has been deleted.`
+    return `The User ${id} has been deleted.`
   }
 
   async userExist({ type, payload }: userExistProps): Promise<User | null> {

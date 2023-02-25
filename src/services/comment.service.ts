@@ -25,13 +25,13 @@ export class CommentService {
     return result
   }
 
-  async deleteComment(id: ObjectId, text: string): Promise<string> {
+  async deleteComment(id: string, text: string): Promise<string> {
     await CommentRepository.findOneAndDelete({ _id: id })
 
     return `The Comment ~ ${text} ~ has been deleted.`
   }
 
-  async getComment(id: ObjectId): Promise<Comment | null> {
+  async getComment(id: string): Promise<Comment | null> {
     const result = await CommentRepository.findOne({ _id: id })
 
     return result

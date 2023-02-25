@@ -28,7 +28,7 @@ userRouter
   .put(uploadAvatar, (req: Request, res: Response) => user.updateUser(req, res))
 
 userRouter
-  .route("/user")
+  .route("/user/:id")
   .delete((req: Request, res: Response) => user.deleteUser(req, res))
 
 userRouter
