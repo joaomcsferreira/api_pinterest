@@ -2,13 +2,16 @@ import "reflect-metadata"
 import express, { Request, Response } from "express"
 import { container } from "tsyringe"
 import { BoardController } from "../controllers/board.controller"
+import permission from "../middlewares/user.middleware"
 
 const boardRouter = express()
 const board = container.resolve(BoardController)
 
 boardRouter
   .route("/board")
-  .post((req: Request, res: Response) => board.createBoard(req, res))
+  .post(permission, (req: Request, res: Response) =>
+    board.createBoard(req, res)
+  )
 
 boardRouter
   .route("/boards/:username")
@@ -16,6 +19,8 @@ boardRouter
 
 boardRouter
   .route("/board/:name")
-  .delete((req: Request, res: Response) => board.deleteBoard(req, res))
+  .delete(permission, (req: Request, res: Response) =>
+    board.deleteBoard(req, res)
+  )
 
 export default boardRouter

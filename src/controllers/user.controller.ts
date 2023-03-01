@@ -2,8 +2,13 @@ import { Request, Response } from "express"
 import { injectable, inject } from "tsyringe"
 
 import { UserService } from "../services/user.service"
-import { createToken, decodedToken } from "../utils/jwt"
-import { cannotBlank } from "../utils/validationFields"
+import {
+  createToken,
+  decodedToken,
+  decryptPassword,
+  encryptPassword,
+} from "../helper/encryption"
+import { cannotBlank } from "../helper/validationFields"
 
 interface MulterRequest extends Request {
   file: any
@@ -27,9 +32,7 @@ export class UserController {
       if (!result)
         throw new Error("The User you tried to access does not exist.")
 
-      const user = this._service.userDisplay(result)
-
-      res.status(202).json({ result })
+      res.status(202).json({ result: this._service.userDisplay(result) })
     } catch (error: any) {
       res.status(404).json({ error: error.message || error.toString() })
     }
@@ -42,19 +45,16 @@ export class UserController {
       if (!email) throw new Error(cannotBlank("email"))
       if (!password) throw new Error(cannotBlank("password"))
 
-      const emailExist = await this._service.userExist({
+      const user = await this._service.userExist({
         type: "email",
         payload: { email: email.toLocaleLowerCase() },
       })
-      if (!emailExist)
-        throw new Error("The User you tried to access does not exist.")
 
-      const user = await this._service.userExist({
-        type: "password",
-        payload: { email: email.toLocaleLowerCase(), password },
-      })
+      if (!user) throw new Error("The User you tried to access does not exist.")
 
-      if (!user)
+      const passwordIsValid = await decryptPassword(password, user.password)
+
+      if (!passwordIsValid)
         throw new Error(
           "The password you entered is incorrect. Please try again or reset your password if needed."
         )
@@ -87,19 +87,37 @@ export class UserController {
       if (emailIsValid) throw new Error(emailIsValid)
       if (passwordIsValid) throw new Error(passwordIsValid)
 
-      const user = await this._service.userExist({
+      const emailExist = await this._service.userExist({
         type: "email",
         payload: { email },
       })
 
-      if (user)
+      if (emailExist)
         throw new Error(
           "The email address you entered is already associated with an account."
         )
 
-      const result = await this._service.createUser(email, password)
+      let username = email.split("@")[0].toLocaleLowerCase()
 
-      res.status(201).json({ result })
+      const usernameExist = await this._service.userExist({
+        type: "username",
+        payload: { username },
+      })
+
+      if (!emailExist && usernameExist) {
+        const randomId = Math.floor(Math.random() * 10 ** 10)
+        username = `user${randomId}`
+      }
+
+      const passwordEncrypt = await encryptPassword(password)
+
+      const result = await this._service.createUser(
+        email,
+        username,
+        passwordEncrypt
+      )
+
+      res.status(201).json({ result: this._service.userDisplay(result) })
     } catch (error: any) {
       res.status(406).json({ error: error.message || error.toString() })
     }
@@ -174,7 +192,7 @@ export class UserController {
       if (!result)
         throw new Error("The User you tried to access doesn't exist.")
 
-      res.status(202).json({ result })
+      res.status(202).json({ result: this._service.userDisplay(result) })
     } catch (error: any) {
       res.status(406).json({ error: error.message || error.toString() })
     }
@@ -220,36 +238,40 @@ export class UserController {
 
   async followUser(req: Request, res: Response) {
     try {
-      const { userIDFollowing, userIDFollowed } = req.body
+      const { usernameFollowing } = req.body
+      const token = req.headers.authorization!
 
       const userFollowing = await this._service.userExist({
-        type: "id",
-        payload: { id: userIDFollowing },
+        type: "username",
+        payload: { username: usernameFollowing },
       })
 
       if (!userFollowing)
-        throw new Error("The userFollowing you tried to access does not exist.")
+        throw new Error(
+          `The ${usernameFollowing} you tried to access does not exist.`
+        )
 
-      const userFollowed = await this._service.userExist({
-        type: "id",
-        payload: { id: userIDFollowed },
-      })
+      const userFollowed = await this._service.getUser(token)
 
       if (!userFollowed)
         throw new Error("The userFollowed you tried to access does not exist.")
 
-      if (userIDFollowed === userIDFollowing)
+      if (userFollowing.username === userFollowed.username)
         throw new Error("User cannot follow themselves.")
 
-      if (userFollowing.following.includes(userIDFollowed))
+      if (
+        userFollowed.following.filter(
+          (followingUser) => followingUser.username === userFollowing.username
+        ).length > 0
+      )
         throw new Error("User is already following this account.")
 
       const result = await this._service.followUser(
-        userIDFollowing,
-        userIDFollowed
+        userFollowing._id,
+        userFollowed._id
       )
 
-      res.status(200).json({ result })
+      res.status(200).json({ result: this._service.userDisplay(result) })
     } catch (error: any) {
       res.status(404).json({ error: error.message || error.toString() })
     }
@@ -257,35 +279,37 @@ export class UserController {
 
   async unfollowUser(req: Request, res: Response) {
     try {
-      const { userIDFollowing, userIDFollowed } = req.body
+      const { usernameFollowing } = req.body
+      const token = req.headers.authorization!
 
       const userFollowing = await this._service.userExist({
-        type: "id",
-        payload: { id: userIDFollowing },
+        type: "username",
+        payload: { username: usernameFollowing },
       })
 
       if (!userFollowing)
         throw new Error("The userFollowing you tried to access does not exist.")
 
-      const userFollowed = await this._service.userExist({
-        type: "id",
-        payload: { id: userIDFollowed },
-      })
+      const userFollowed = await this._service.getUser(token)
 
       if (!userFollowed)
         throw new Error("The userFollowed you tried to access does not exist.")
 
-      if (!userFollowing.following.includes(userIDFollowed))
+      if (
+        userFollowed.following.filter(
+          (followingUser) => followingUser.username === userFollowing.username
+        ).length === 0
+      )
         throw new Error(
           "User cannot unfollow an account they were not following."
         )
 
       const result = await this._service.unfollowUser(
-        userIDFollowing,
-        userIDFollowed
+        userFollowing._id,
+        userFollowed._id
       )
 
-      res.status(200).json({ result })
+      res.status(200).json({ result: this._service.userDisplay(result) })
     } catch (error: any) {
       res.status(404).json({ error: error.message || error.toString() })
     }

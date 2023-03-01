@@ -2,7 +2,7 @@ import { Request, Response } from "express"
 import { injectable, inject } from "tsyringe"
 import { BoardService } from "../services/board.service"
 import { UserService } from "../services/user.service"
-import { cannotBlank } from "../utils/validationFields"
+import { cannotBlank } from "../helper/validationFields"
 
 @injectable()
 export class BoardController {
@@ -31,7 +31,7 @@ export class BoardController {
 
       const result = await this._service.createBoard(name, user)
 
-      res.status(200).json({ result })
+      res.status(200).json({ result: this._service.boardDisplay(result) })
     } catch (error: any) {
       res.status(401).json({ error: error.message || error.toString() })
     }

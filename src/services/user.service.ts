@@ -3,7 +3,7 @@ import { User } from "../models/user.model"
 
 import { UserRepository } from "../repositories/user.repository"
 import { UserFields } from "../types"
-import { decodedToken } from "../utils/jwt"
+import { decodedToken } from "../helper/encryption"
 
 interface userExistProps {
   type: "email" | "password" | "username" | "id"
@@ -26,6 +26,8 @@ export class UserService {
 
   async getProfile(username: string): Promise<User | null> {
     const result = await UserRepository.findOne({ username })
+      .populate("followers", "avatar username firstName lastName")
+      .populate("following", "avatar username firstName lastName")
 
     return result
   }
@@ -34,11 +36,15 @@ export class UserService {
     throw new Error("Method not implemented.")
   }
 
-  async createUser(email: string, password: string): Promise<User> {
+  async createUser(
+    email: string,
+    username: string,
+    password: string
+  ): Promise<User> {
     const result = await UserRepository.create({
       email: email.toLocaleLowerCase(),
-      username: email.split("@")[0].toLocaleLowerCase(),
-      password: password.toLocaleLowerCase(),
+      username,
+      password,
     })
 
     return result
@@ -57,16 +63,16 @@ export class UserService {
   }
 
   async followUser(userIDFollowing: string, userIDFollowed: string) {
-    const response = await UserRepository.findOneAndUpdate(
+    await UserRepository.findOneAndUpdate(
       { _id: userIDFollowing },
-      { $push: { following: userIDFollowed } },
+      { $push: { followers: userIDFollowed } },
       { new: true }
     )
 
-    await UserRepository.findOneAndUpdate(
+    const response = await UserRepository.findOneAndUpdate(
       { _id: userIDFollowed },
       {
-        $push: { followers: userIDFollowing },
+        $push: { following: userIDFollowing },
       },
       { new: true }
     )
@@ -75,15 +81,15 @@ export class UserService {
   }
 
   async unfollowUser(userIDFollowing: string, userIDFollowed: string) {
-    const response = await UserRepository.findOneAndUpdate(
+    await UserRepository.findOneAndUpdate(
       { _id: userIDFollowing },
-      { $pull: { following: userIDFollowed } }
+      { $pull: { followers: userIDFollowed } }
     )
 
-    await UserRepository.findOneAndUpdate(
+    const response = await UserRepository.findOneAndUpdate(
       { _id: userIDFollowed },
       {
-        $pull: { followers: userIDFollowing },
+        $pull: { following: userIDFollowing },
       }
     )
 
@@ -95,36 +101,54 @@ export class UserService {
 
     switch (type) {
       case "email":
-        result = await UserRepository.findOne({ email: payload.email })
+        result = await UserRepository.findOne({
+          email: payload.email,
+        })
+          .populate("followers", "avatar username firstName lastName")
+          .populate("following", "avatar username firstName lastName")
         break
       case "password":
         result = await UserRepository.findOne({
           email: payload.email,
           password: payload.password,
         })
+          .populate("followers", "avatar username firstName lastName")
+          .populate("following", "avatar username firstName lastName")
         break
       case "username":
-        result = await UserRepository.findOne({ username: payload.username })
+        result = await UserRepository.findOne({
+          username: payload.username,
+        })
+          .populate("followers", "avatar username firstName lastName")
+          .populate("following", "avatar username firstName lastName")
         break
       case "id":
         result = await UserRepository.findOne({ _id: payload.id })
+          .populate("followers", "avatar username firstName lastName")
+          .populate("following", "avatar username firstName lastName")
         break
     }
 
     return result
   }
 
-  userDisplay = (user: User) => {
-    const userDisplay = {
-      _id: user._id,
-      email: user.email,
-      username: user.username,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      avatar: user.avatar,
-      createdAt: user.createdAt,
+  userDisplay = (user: User | null) => {
+    if (user) {
+      const userDisplay = {
+        _id: user._id,
+        email: user.email,
+        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        avatar: user.avatar,
+        followers: user.followers,
+        following: user.following,
+        createdAt: user.createdAt,
+      }
+
+      return userDisplay
     }
 
-    return userDisplay
+    return null
   }
 }

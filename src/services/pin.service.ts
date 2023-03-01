@@ -59,6 +59,13 @@ export class PinService {
           select: "_id username firstName lastName avatar",
         },
       })
+      .populate({
+        path: "user",
+        populate: {
+          path: "followers",
+          select: "_id username firstName lastName avatar",
+        },
+      })
 
     return result
   }
@@ -118,7 +125,15 @@ export class PinService {
       website: pin.website,
       board: pin.board,
       src: pin.src,
-      user: pin.user,
+      user: {
+        _id: pin.user._id,
+        username: pin.user.username,
+        firstName: pin.user.firstName,
+        lastName: pin.user.lastName,
+        avatar: pin.user.avatar,
+        followers: pin.user.followers,
+        following: pin.user.following,
+      },
       comments: pin.comments,
       createdAt: pin.createdAt,
     }

@@ -4,7 +4,7 @@ import { injectable, inject } from "tsyringe"
 import { CommentService } from "../services/comment.service"
 import { PinService } from "../services/pin.service"
 import { UserService } from "../services/user.service"
-import { cannotBlank } from "../utils/validationFields"
+import { cannotBlank } from "../helper/validationFields"
 
 @injectable()
 export class CommentController {

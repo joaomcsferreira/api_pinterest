@@ -2,7 +2,8 @@ import "reflect-metadata"
 import express, { Request, Response } from "express"
 import { container } from "tsyringe"
 import { UserController } from "../controllers/user.controller"
-import { uploadAvatar } from "../utils/multer"
+import { uploadAvatar } from "../helper/multer"
+import permission from "../middlewares/user.middleware"
 
 const userRouter = express()
 const user = container.resolve(UserController)
@@ -13,7 +14,7 @@ userRouter
 
 userRouter
   .route("/validate")
-  .get((req: Request, res: Response) => user.validateUser(req, res))
+  .get(permission, (req: Request, res: Response) => user.validateUser(req, res))
 
 userRouter
   .route("/user")
@@ -25,18 +26,22 @@ userRouter
 
 userRouter
   .route("/user")
-  .put(uploadAvatar, (req: Request, res: Response) => user.updateUser(req, res))
+  .put(permission, uploadAvatar, (req: Request, res: Response) =>
+    user.updateUser(req, res)
+  )
 
 userRouter
   .route("/user/:id")
-  .delete((req: Request, res: Response) => user.deleteUser(req, res))
+  .delete(permission, (req: Request, res: Response) =>
+    user.deleteUser(req, res)
+  )
 
 userRouter
   .route("/follow")
-  .put((req: Request, res: Response) => user.followUser(req, res))
+  .put(permission, (req: Request, res: Response) => user.followUser(req, res))
 
 userRouter
   .route("/unfollow")
-  .put((req: Request, res: Response) => user.unfollowUser(req, res))
+  .put(permission, (req: Request, res: Response) => user.unfollowUser(req, res))
 
 export default userRouter

@@ -35,7 +35,15 @@ export class BoardService {
     const boardDisplay = {
       _id: board._id,
       name: board.name,
-      user: board.user,
+      user: {
+        _id: board.user._id,
+        username: board.user.username,
+        firstName: board.user.firstName,
+        lastName: board.user.lastName,
+        avatar: board.user.avatar,
+        followers: board.user.followers,
+        following: board.user.following,
+      },
       createdAt: board.createdAt,
     }
 

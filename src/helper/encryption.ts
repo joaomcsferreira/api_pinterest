@@ -1,6 +1,8 @@
 import jwt, { JwtPayload } from "jsonwebtoken"
-import dotenv from "dotenv"
 import { ObjectId } from "mongoose"
+
+import bcrypt from "bcrypt"
+import dotenv from "dotenv"
 
 dotenv.config()
 
@@ -32,4 +34,18 @@ const decodedToken = (token: string): ObjectId => {
   return (decoded as JwtPayload).userId
 }
 
-export { createToken, decodedToken }
+const encryptPassword = async (password: string): Promise<string> => {
+  const salt = await bcrypt.genSalt(10)
+  const hashedPassword = await bcrypt.hash(password, salt)
+  return hashedPassword
+}
+
+const decryptPassword = async (
+  password: string,
+  hashedPassword: string
+): Promise<boolean> => {
+  const isMatch = await bcrypt.compare(password, hashedPassword)
+  return isMatch
+}
+
+export { createToken, decodedToken, encryptPassword, decryptPassword }

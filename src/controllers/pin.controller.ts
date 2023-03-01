@@ -7,7 +7,7 @@ import { UserService } from "../services/user.service"
 import { PinFields } from "../types"
 
 import { getTypesProps } from "../services/pin.service"
-import { cannotBlank } from "../utils/validationFields"
+import { cannotBlank } from "../helper/validationFields"
 
 interface MulterRequest extends Request {
   file: any
@@ -61,7 +61,7 @@ export class PinController {
 
       if (!result) throw new Error("The Pin you tried to access doesn't exist.")
 
-      res.status(202).json({ result })
+      res.status(202).json({ result: this._service.pinDisplay(result) })
     } catch (error: any) {
       res.status(404).json({ error: error.message || error.toString() })
     }
@@ -94,7 +94,7 @@ export class PinController {
         user._id
       )
 
-      res.status(201).json({ result })
+      res.status(201).json({ result: this._service.pinDisplay(result) })
     } catch (error: any) {
       res.status(404).json({ error: error.message || error.toString() })
     }
