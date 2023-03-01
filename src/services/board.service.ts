@@ -41,8 +41,6 @@ export class BoardService {
         firstName: board.user.firstName,
         lastName: board.user.lastName,
         avatar: board.user.avatar,
-        followers: board.user.followers,
-        following: board.user.following,
       },
       createdAt: board.createdAt,
     }

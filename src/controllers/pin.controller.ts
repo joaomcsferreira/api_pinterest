@@ -117,7 +117,7 @@ export class PinController {
 
       const board = await this._boardService.getBoard(boardName, user._id)
 
-      if (!board)
+      if (!board && boardName)
         throw new Error("The Board you tried to access does not exist.")
 
       const pin: PinFields = {

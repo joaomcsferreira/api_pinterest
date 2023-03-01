@@ -201,6 +201,7 @@ export class UserController {
   async deleteUser(req: Request, res: Response) {
     try {
       const { id } = req.params
+      const token = req.headers.authorization!
 
       const user = await this._service.userExist({
         type: "id",
@@ -208,6 +209,14 @@ export class UserController {
       })
 
       if (!user) throw new Error("The User you tried to access does not exist.")
+
+      const currentUser = await this._service.getUser(token)
+
+      if (!currentUser)
+        throw new Error("The User you tried to access does not exist.")
+
+      if (user.username != currentUser.username)
+        throw new Error("You do not have authorization.")
 
       const result = await this._service.deleteUser(id)
 
