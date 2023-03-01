@@ -5,8 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "compile": "tsc -w ",
-    "start": "nodemon ./dist/program.js"
+    "compile": "tsc -w",
+    "start:dev": "nodemon ./dist/program.js",
+    "start": "node ./dist/program.js",
+    "build": "tsc --project tsconfig.json"
   },
   "keywords": [],
   "author": "Joao Marcos C. Ferreira",
