@@ -25,7 +25,7 @@ class StartUp {
     this.app.use(express.urlencoded({ extended: true }))
     this.app.use("/uploads", express.static("./uploads"))
     this.app.use((req: Request, res: Response, next: NextFunction) => {
-      res.header("Access-Control-Allow-Origin", "http://localhost:3000")
+      res.header("Access-Control-Allow-Origin", "*")
       res.header(
         "Access-Control-Allow-Headers",
         "Origin, X-Requested-With, Authorization, Content-Type, Accept"
