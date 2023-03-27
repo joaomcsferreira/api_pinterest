@@ -126,7 +126,9 @@ export class UserController {
   async updateUser(req: Request, res: Response) {
     try {
       const { email, username, firstName, lastName } = req.body
-      const avatar = (req as MulterRequest).file?.path.replaceAll("\\", "/")
+      const avatar = (req as MulterRequest).file?.path.replace(/\\/g, "/")
+
+      console.log(avatar)
 
       const emailIsValid = await this.validationFields({
         type: "email",

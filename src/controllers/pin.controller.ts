@@ -70,7 +70,7 @@ export class PinController {
   async createPin(req: Request, res: Response) {
     try {
       const { title, description, website, board: boardName } = req.body
-      const src = (req as MulterRequest).file?.path.replaceAll("\\", "/")
+      const src = (req as MulterRequest).file?.path.replace(/\\/g, "/")
       const token = req.headers.authorization!
 
       if (!boardName) throw new Error(cannotBlank("board"))
