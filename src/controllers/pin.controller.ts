@@ -9,10 +9,6 @@ import { PinFields } from "../types"
 import { getTypesProps } from "../services/pin.service"
 import { cannotBlank } from "../helper/validationFields"
 
-interface MulterRequest extends Request {
-  file: any
-}
-
 @injectable()
 export class PinController {
   constructor(
@@ -69,8 +65,7 @@ export class PinController {
 
   async createPin(req: Request, res: Response) {
     try {
-      const { title, description, website, board: boardName } = req.body
-      const src = (req as MulterRequest).file?.path.replace(/\\/g, "/")
+      const { title, src, description, website, board: boardName } = req.body
       const token = req.headers.authorization!
 
       if (!boardName) throw new Error(cannotBlank("board"))

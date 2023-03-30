@@ -1,5 +1,4 @@
 import express, { Application, NextFunction, Request, Response } from "express"
-import multer from "multer"
 import dotenv from "dotenv"
 
 import "./shared/container"
@@ -15,15 +14,12 @@ dotenv.config()
 
 class StartUp {
   public app: Application
-  public upload
   private _db: Database = new Database()
 
   constructor() {
     this.app = express()
-    this.upload = multer()
-    this.app.use(express.json())
-    this.app.use(express.urlencoded({ extended: true }))
-    this.app.use("/uploads", express.static("./uploads"))
+    this.app.use(express.json({ limit: "10mb" }))
+    this.app.use(express.urlencoded({ extended: true, limit: "10mb" }))
     this.app.use((req: Request, res: Response, next: NextFunction) => {
       res.header("Access-Control-Allow-Origin", "*")
       res.header(
@@ -39,7 +35,7 @@ class StartUp {
 
   routes() {
     this.app.route("/").get((request: Request, response: Response) => {
-      response.send({ version: "0.0.2" })
+      response.send({ version: "0.0.3" })
     })
 
     this.app.use("/", userRouter)

@@ -10,10 +10,6 @@ import {
 } from "../helper/encryption"
 import { cannotBlank } from "../helper/validationFields"
 
-interface MulterRequest extends Request {
-  file: any
-}
-
 interface validationFieldsProps {
   type: "email" | "password" | "username"
   payload: string
@@ -125,10 +121,7 @@ export class UserController {
 
   async updateUser(req: Request, res: Response) {
     try {
-      const { email, username, firstName, lastName } = req.body
-      const avatar = (req as MulterRequest).file?.path.replace(/\\/g, "/")
-
-      console.log(avatar)
+      const { email, username, firstName, lastName, avatar } = req.body
 
       const emailIsValid = await this.validationFields({
         type: "email",

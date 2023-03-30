@@ -1,6 +1,7 @@
 import "reflect-metadata"
-import express, { Request, Response } from "express"
 import { container } from "tsyringe"
+import express, { Request, Response } from "express"
+
 import { CommentController } from "../controllers/comment.controller"
 import permission from "../middlewares/user.middleware"
 

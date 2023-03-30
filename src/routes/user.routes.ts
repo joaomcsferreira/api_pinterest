@@ -1,8 +1,8 @@
 import "reflect-metadata"
-import express, { Request, Response } from "express"
 import { container } from "tsyringe"
+import express, { Request, Response } from "express"
+
 import { UserController } from "../controllers/user.controller"
-import { uploadAvatar } from "../helper/multer"
 import permission from "../middlewares/user.middleware"
 
 const userRouter = express()
@@ -26,9 +26,7 @@ userRouter
 
 userRouter
   .route("/user")
-  .put(permission, uploadAvatar, (req: Request, res: Response) =>
-    user.updateUser(req, res)
-  )
+  .put(permission, (req: Request, res: Response) => user.updateUser(req, res))
 
 userRouter
   .route("/user/:id")

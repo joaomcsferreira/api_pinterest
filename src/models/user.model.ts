@@ -8,7 +8,6 @@ export class User extends Core {
   password: string
   firstName: string
   lastName: string
-  isAdmin: boolean
   avatar: string
   following: Array<User>
   followers: Array<User>

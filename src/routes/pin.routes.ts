@@ -1,8 +1,8 @@
 import "reflect-metadata"
-import express, { Request, Response } from "express"
 import { container } from "tsyringe"
+import express, { Request, Response } from "express"
+
 import { PinController } from "../controllers/pin.controller"
-import { uploadPin } from "../helper/multer"
 import permission from "../middlewares/user.middleware"
 
 const pinRouter = express()
@@ -18,9 +18,7 @@ pinRouter
 
 pinRouter
   .route("/pin")
-  .post(permission, uploadPin, (req: Request, res: Response) =>
-    pin.createPin(req, res)
-  )
+  .post(permission, (req: Request, res: Response) => pin.createPin(req, res))
 
 pinRouter
   .route("/pin/:id")

@@ -1,6 +1,7 @@
 import "reflect-metadata"
-import express, { Request, Response } from "express"
 import { container } from "tsyringe"
+import express, { Request, Response } from "express"
+
 import { BoardController } from "../controllers/board.controller"
 import permission from "../middlewares/user.middleware"
 
