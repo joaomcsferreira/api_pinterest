@@ -49,50 +49,73 @@ npm start
 
 ## List of routes
 
-```bash
-# user routes
-+--------+-------------------------+
-  Method | URI
-+--------+-------------------------+
-  POST   | /user
-  POST   | /user/token
-  GET    | /user/:username
-  GET    | /validate
-  PUT    | /user
-  PUT    | /follow
-  PUT    | /unfollow
-  DELETE | /user/:id
-+--------+-------------------------+
+### User routes
 
-# pin routes
-+--------+-------------------------+
-  Method | URI
-+--------+-------------------------+
-  POST   | /pin
-  GET    | /pin/:id
-  GET    | /pins?type=type&board=board&user=user
-  PUT    | /pin/:id
-  DELETE | /pin/:id
-+--------+-------------------------+
+```http
+POST /user
+```
+```http
+POST /user/token
+```
+```http
+GET /user/:username
+```
+```http
+GET /validate
+```
+```http
+PUT /user
+```
+```http
+PUT /follow
+```
+```http
+PUT /unfollow
+```
+```http
+DELETE /user/:id
+```
 
-# board routes
-+--------+-------------------------+
-  Method | URI
-+--------+-------------------------+
-  POST   | /board
-  GET    | /boards/:username
-  DELETE | /board/:id
-+--------+-------------------------+
+### Pin routes
 
-# comment routes
-+--------+-------------------------+
-  Method | URI
-+--------+-------------------------+
-  POST   | /pin/
-  GET    | /pin/:id/comments
-  DELETE | /pin/:id/comment/:commentId
-+--------+-------------------------+
+```http
+POST /pin
+```
+```http
+GET /pin/:id
+```
+```http
+GET /pins?type=type&board=board&user=user
+```
+```http
+PUT /pin/:id
+```
+```http
+DELETE /pin/:id
+```
 
+### Board routes
+
+```http
+POST /board
+```
+```http
+GET /boards/:username
+```
+```http
+DELETE /board/:id
+```
+
+### Comment routes
+
+```http
+POST /pin/
+```
+```http
+GET /pin/:id/comments
+```
+```http
+DELETE /pin/:id/comment/:commentId
 ```
 
 # Author
