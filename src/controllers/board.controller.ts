@@ -29,7 +29,10 @@ export class BoardController {
           "A board with the same name already exists. Please choose a different name for the board and try again."
         )
 
-      const result = await this._service.createBoard(name, user)
+      const result = await this._service.createBoard(
+        name.replace(/ /g, "-"),
+        user
+      )
 
       res.status(200).json({ result: this._service.boardDisplay(result) })
     } catch (error: any) {

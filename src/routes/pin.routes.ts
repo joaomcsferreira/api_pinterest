@@ -4,6 +4,7 @@ import express, { Request, Response } from "express"
 
 import { PinController } from "../controllers/pin.controller"
 import permission from "../middlewares/user.middleware"
+import { uploadPin } from "../helper/multer"
 
 const pinRouter = express()
 const pin = container.resolve(PinController)
@@ -18,7 +19,9 @@ pinRouter
 
 pinRouter
   .route("/pin")
-  .post(permission, (req: Request, res: Response) => pin.createPin(req, res))
+  .post(permission, uploadPin, (req: Request, res: Response) =>
+    pin.createPin(req, res)
+  )
 
 pinRouter
   .route("/pin/:id")

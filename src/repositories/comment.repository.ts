@@ -6,8 +6,8 @@ const CommentSchema = new mongoose.Schema<Comment>({
   date: { type: Date, default: new Date() },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
   pin: { type: mongoose.Schema.Types.ObjectId, ref: "pin", required: true },
-  createdAt: { type: Date, default: new Date() },
-  updatedAt: { type: Date, default: new Date() },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: null },
 })
 
 export const CommentRepository = mongoose.model<Comment>(

@@ -1,8 +1,13 @@
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage"
 import { ObjectId } from "mongoose"
+import { storage } from "../infra/firebase"
 import { Pin } from "../models/pin.model"
 
 import { PinRepository } from "../repositories/pin.repository"
 import { PinFields } from "../types"
+
+import sharp from "sharp"
+import { getStorageOptions } from "../helper/multer"
 
 export type getTypesProps = "all" | "user" | "board"
 
@@ -10,13 +15,15 @@ interface getPinsProps {
   type: getTypesProps
   user?: string
   board?: string
-  total?: number
+  total: number
+  page: number
 }
 
 export class PinService {
   async getPins({
     type,
     total,
+    page,
     user,
     board,
   }: getPinsProps): Promise<Array<Pin>> {
@@ -24,28 +31,36 @@ export class PinService {
 
     switch (type) {
       case "all":
-        response = await PinRepository.find({}).populate(
-          "user",
-          "email username firstName lastName avatar"
-        )
+        response = await PinRepository.find({})
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * total)
+          .limit(total)
+          .populate("user", "email username firstName lastName avatar")
         break
 
       case "board":
         response = await PinRepository.find({
           board,
           user,
-        }).populate("user", "email username firstName lastName avatar")
+        })
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * total)
+          .limit(total)
+          .populate("user", "email username firstName lastName avatar")
 
         break
 
       case "user":
         response = await PinRepository.find({ user })
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * total)
+          .limit(total)
           .populate("user", "email username firstName lastName avatar")
           .populate("board", "name")
         break
     }
 
-    return total ? response.slice(0, total) : response
+    return response
   }
 
   async getPin(id: string): Promise<Pin | null> {
@@ -75,23 +90,66 @@ export class PinService {
     description: String,
     website: String,
     board: ObjectId,
-    src: string,
+    file: Express.Multer.File | undefined,
     user: ObjectId
   ): Promise<Pin> {
-    const result = await PinRepository.create({
-      title,
-      description,
-      website,
-      board,
-      src,
-      user,
-    })
+    if (file) {
+      const { nameImage, metadata, buffer } = getStorageOptions(file)
 
-    return result
+      const hightSizeBuffer = await sharp(buffer).toBuffer()
+      const highFileRef = ref(storage, `uploads/pin/${nameImage}+high`)
+      const highSnapshot = await uploadBytesResumable(
+        highFileRef,
+        hightSizeBuffer,
+        metadata
+      )
+
+      const mediumSizeBuffer = await sharp(buffer)
+        .resize({ width: 320 })
+        .toBuffer()
+      const mediumFileRef = ref(storage, `uploads/pin/${nameImage}+medium`)
+      const mediumSnapshot = await uploadBytesResumable(
+        mediumFileRef,
+        mediumSizeBuffer,
+        metadata
+      )
+
+      const lowSizeBuffer = await sharp(buffer)
+        .resize({ width: 160 })
+        .toBuffer()
+      const lowFileRef = ref(storage, `uploads/pin/${nameImage}+low`)
+      const lowSnapshot = await uploadBytesResumable(
+        lowFileRef,
+        lowSizeBuffer,
+        metadata
+      )
+
+      const highSizeFile = await getDownloadURL(highSnapshot.ref)
+      const mediumSizeFile = await getDownloadURL(mediumSnapshot.ref)
+      const lowSizeFile = await getDownloadURL(lowSnapshot.ref)
+
+      const result = await PinRepository.create({
+        title,
+        description,
+        website,
+        board,
+        src: {
+          high: highSizeFile,
+          medium: mediumSizeFile,
+          low: lowSizeFile,
+        },
+        user,
+      })
+
+      return result
+    } else throw new Error("pin is required")
   }
 
   async updatePin(id: string, pin: PinFields): Promise<Pin | null> {
-    const result = await PinRepository.findByIdAndUpdate(id, pin)
+    const result = await PinRepository.findByIdAndUpdate(id, {
+      ...pin,
+      updatedAt: Date.now(),
+    })
 
     return result
   }

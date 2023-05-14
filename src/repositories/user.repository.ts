@@ -15,8 +15,8 @@ const UserSchema = new mongoose.Schema<User>({
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }],
   pins: [{ type: mongoose.Schema.Types.ObjectId, ref: "pin" }],
   boards: [{ type: mongoose.Schema.Types.ObjectId, ref: "board" }],
-  createdAt: { type: Date, default: new Date() },
-  updatedAt: { type: Date, default: new Date() },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: null },
 })
 
 export const UserRepository = mongoose.model<User>("user", UserSchema)

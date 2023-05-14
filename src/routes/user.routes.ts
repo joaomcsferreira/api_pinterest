@@ -4,6 +4,7 @@ import express, { Request, Response } from "express"
 
 import { UserController } from "../controllers/user.controller"
 import permission from "../middlewares/user.middleware"
+import { uploadAvatar } from "../helper/multer"
 
 const userRouter = express()
 const user = container.resolve(UserController)
@@ -26,7 +27,9 @@ userRouter
 
 userRouter
   .route("/user")
-  .put(permission, (req: Request, res: Response) => user.updateUser(req, res))
+  .put(permission, uploadAvatar, (req: Request, res: Response) =>
+    user.updateUser(req, res)
+  )
 
 userRouter
   .route("/user/:id")

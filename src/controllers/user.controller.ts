@@ -1,6 +1,8 @@
 import { Request, Response } from "express"
 import { injectable, inject } from "tsyringe"
 
+import crypto from "crypto"
+
 import { UserService } from "../services/user.service"
 import {
   createToken,
@@ -8,7 +10,9 @@ import {
   decryptPassword,
   encryptPassword,
 } from "../helper/encryption"
+
 import { cannotBlank } from "../helper/validationFields"
+import { getStorageOptions } from "../helper/multer"
 
 interface validationFieldsProps {
   type: "email" | "password" | "username"
@@ -121,7 +125,8 @@ export class UserController {
 
   async updateUser(req: Request, res: Response) {
     try {
-      const { email, username, firstName, lastName, avatar } = req.body
+      const { email, username, firstName, lastName } = req.body
+      const file = req?.file
 
       const emailIsValid = await this.validationFields({
         type: "email",
@@ -179,10 +184,10 @@ export class UserController {
         lastName: lastName
           ? lastName.toLocaleLowerCase()
           : current_user?.lastName,
-        avatar: avatar || current_user?.avatar,
+        avatar: current_user?.avatar,
       }
 
-      const result = await this._service.updateUser(id, user)
+      const result = await this._service.updateUser(id, user, file)
 
       if (!result)
         throw new Error("The User you tried to access doesn't exist.")

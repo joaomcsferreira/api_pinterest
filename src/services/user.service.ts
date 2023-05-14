@@ -5,6 +5,11 @@ import { UserRepository } from "../repositories/user.repository"
 import { UserFields } from "../types"
 import { decodedToken } from "../helper/encryption"
 
+import sharp from "sharp"
+import { storage } from "../infra/firebase"
+import { getDownloadURL, ref, uploadBytesResumable } from "firebase/storage"
+import { getStorageOptions } from "../helper/multer"
+
 interface userExistProps {
   type: "email" | "password" | "username" | "id"
   payload: {
@@ -50,8 +55,31 @@ export class UserService {
     return result
   }
 
-  async updateUser(id: ObjectId, user: UserFields): Promise<User | null> {
-    const result = await UserRepository.findByIdAndUpdate(id, user)
+  async updateUser(
+    id: ObjectId,
+    user: UserFields,
+    file: Express.Multer.File | undefined
+  ): Promise<User | null> {
+    const { nameImage, metadata, buffer } = getStorageOptions(file)
+
+    if (file) {
+      const imageSizeBuffer = await sharp(buffer)
+        .resize({ width: 320 })
+        .toBuffer()
+      const imageRef = ref(storage, `uplaods/user/${nameImage}`)
+      const snapshot = await uploadBytesResumable(
+        imageRef,
+        imageSizeBuffer,
+        metadata
+      )
+
+      user.avatar = await getDownloadURL(snapshot.ref)
+    }
+
+    const result = await UserRepository.findByIdAndUpdate(id, {
+      ...user,
+      updatedAt: Date.now(),
+    })
 
     return result
   }

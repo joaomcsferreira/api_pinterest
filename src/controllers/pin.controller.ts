@@ -9,6 +9,8 @@ import { PinFields } from "../types"
 import { getTypesProps } from "../services/pin.service"
 import { cannotBlank } from "../helper/validationFields"
 
+import { getStorageOptions } from "../helper/multer"
+
 @injectable()
 export class PinController {
   constructor(
@@ -20,8 +22,9 @@ export class PinController {
   async getPins(req: Request, res: Response) {
     try {
       const { user, board } = req.query as { user: string; board: string }
-      const total = Number.parseInt(req.query.total as string)
       const type = req.query.type as getTypesProps
+      let total = Number.parseInt(req.query.total as string) || 10
+      let page = Number.parseInt(req.query.page as string) || 1
 
       const userId = await this._userService.userExist({
         type: "username",
@@ -39,11 +42,12 @@ export class PinController {
       const result = await this._service.getPins({
         type,
         total,
+        page,
         user: userId?._id,
         board: boardId?._id,
       })
 
-      res.status(202).json({ result })
+      res.status(202).json({ result: result })
     } catch (error: any) {
       res.status(500).json({ error: error.message || error.toString() })
     }
@@ -65,7 +69,8 @@ export class PinController {
 
   async createPin(req: Request, res: Response) {
     try {
-      const { title, src, description, website, board: boardName } = req.body
+      const { title, description, website, board: boardName } = req.body
+      const file = req.file
       const token = req.headers.authorization!
 
       if (!boardName) throw new Error(cannotBlank("board"))
@@ -85,7 +90,7 @@ export class PinController {
         description,
         website,
         board._id,
-        src,
+        file,
         user._id
       )
 

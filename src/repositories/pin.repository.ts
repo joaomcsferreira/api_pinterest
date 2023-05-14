@@ -6,11 +6,15 @@ const PinSchema = new mongoose.Schema<Pin>({
   description: { type: String },
   website: { type: String },
   board: { type: mongoose.Schema.Types.ObjectId, ref: "board", required: true },
-  src: { type: String, required: true },
+  src: {
+    high: { type: String, required: true },
+    medium: { type: String, required: true },
+    low: { type: String, required: true },
+  },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "comment" }],
-  createdAt: { type: Date, default: new Date() },
-  updatedAt: { type: Date, default: new Date() },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: null },
 })
 
 export const PinRepository = mongoose.model<Pin>("pin", PinSchema)
