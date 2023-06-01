@@ -76,50 +76,60 @@ export class UserService {
       user.avatar = await getDownloadURL(snapshot.ref)
     }
 
-    const result = await UserRepository.findByIdAndUpdate(id, {
-      ...user,
-      updatedAt: Date.now(),
-    })
+    const result = await UserRepository.findByIdAndUpdate(
+      id,
+      {
+        ...user,
+        updatedAt: Date.now(),
+      },
+      { returnDocument: "after" }
+    )
 
     return result
   }
 
   async deleteUser(id: string): Promise<string> {
-    await UserRepository.deleteOne({ _id: id })
+    await UserRepository.findByIdAndDelete({ _id: id })
 
     return `The User ${id} has been deleted.`
   }
 
-  async followUser(userIDFollowing: string, userIDFollowed: string) {
+  async followUser(userToFollow: string, user: string) {
     await UserRepository.findOneAndUpdate(
-      { _id: userIDFollowing },
-      { $push: { followers: userIDFollowed } },
+      { _id: userToFollow },
+      { $push: { followers: user } },
       { new: true }
     )
 
     const response = await UserRepository.findOneAndUpdate(
-      { _id: userIDFollowed },
+      { _id: user },
       {
-        $push: { following: userIDFollowing },
+        $push: { following: userToFollow },
       },
-      { new: true }
+      { new: true, returnDocument: "after" }
     )
+      .populate("followers", "avatar username firstName lastName")
+      .populate("following", "avatar username firstName lastName")
 
     return response
   }
 
-  async unfollowUser(userIDFollowing: string, userIDFollowed: string) {
+  async unfollowUser(userToUnfollow: string, user: string) {
     await UserRepository.findOneAndUpdate(
-      { _id: userIDFollowing },
-      { $pull: { followers: userIDFollowed } }
+      { _id: userToUnfollow },
+      { $pull: { followers: user } },
+      { new: true }
     )
 
     const response = await UserRepository.findOneAndUpdate(
-      { _id: userIDFollowed },
+      { _id: user },
       {
-        $pull: { following: userIDFollowing },
-      }
+        $pull: { following: userToUnfollow },
+      },
+      { new: true, returnDocument: "after" }
     )
+      .populate("followers", "avatar username firstName lastName")
+      .populate("following", "avatar username firstName lastName")
 
     return response
   }
@@ -166,9 +176,9 @@ export class UserService {
         _id: user._id,
         email: user.email,
         username: user.username,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        avatar: user.avatar,
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        avatar: user.avatar || "",
         followers: user.followers,
         following: user.following,
         createdAt: user.createdAt,

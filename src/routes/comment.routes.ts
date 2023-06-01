@@ -9,7 +9,7 @@ const commentRouter = express()
 const comment = container.resolve(CommentController)
 
 commentRouter
-  .route("/comment")
+  .route("/pin/:id/comment")
   .post(permission, (req: Request, res: Response) =>
     comment.createComment(req, res)
   )

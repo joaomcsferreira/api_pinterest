@@ -10,6 +10,8 @@ import boardRouter from "./routes/board.routes"
 import pinRouter from "./routes/pin.routes"
 import commentRouter from "./routes/comment.routes"
 
+import documentationRouter from "./routes/documentation.routes"
+
 dotenv.config()
 
 class StartUp {
@@ -34,14 +36,11 @@ class StartUp {
   }
 
   routes() {
-    this.app.route("/").get((request: Request, response: Response) => {
-      response.send({ version: "0.0.3" })
-    })
-
     this.app.use("/", userRouter)
     this.app.use("/", boardRouter)
     this.app.use("/", pinRouter)
     this.app.use("/", commentRouter)
+    this.app.use("/", documentationRouter)
   }
 }
 

@@ -11,7 +11,7 @@ export class CommentService {
   ): Promise<Comment> {
     const result = await CommentRepository.create({ text, user, pin })
 
-    return result
+    return result.populate("user", "username firstName lastName avatar")
   }
 
   async getComments(id: string): Promise<Array<Comment>> {
@@ -19,8 +19,6 @@ export class CommentService {
       "user",
       "email username firstName lastName avatar"
     )
-
-    // const comments = result.map((comment) => this.commentDisplay(comment))
 
     return result
   }

@@ -9,8 +9,6 @@ import { PinFields } from "../types"
 import { getTypesProps } from "../services/pin.service"
 import { cannotBlank } from "../helper/validationFields"
 
-import { getStorageOptions } from "../helper/multer"
-
 @injectable()
 export class PinController {
   constructor(
@@ -22,7 +20,7 @@ export class PinController {
   async getPins(req: Request, res: Response) {
     try {
       const { user, board } = req.query as { user: string; board: string }
-      const type = req.query.type as getTypesProps
+      const type = (req.query.type as getTypesProps) || "all"
       let total = Number.parseInt(req.query.total as string) || 10
       let page = Number.parseInt(req.query.page as string) || 1
 
@@ -32,12 +30,18 @@ export class PinController {
       })
 
       if (!userId && type === "user")
-        throw new Error("The User you tried to access does not exist.")
+        throw {
+          code: 404,
+          message: "The User you tried to access doesn't exist.",
+        }
 
       const boardId = await this._boardService.getBoard(board, userId?._id)
 
       if (!boardId && type === "board")
-        throw new Error("The Board you tried to access does not exist.")
+        throw {
+          code: 404,
+          message: "The Board you tried to access doesn't exist.",
+        }
 
       const result = await this._service.getPins({
         type,
@@ -47,9 +51,13 @@ export class PinController {
         board: boardId?._id,
       })
 
-      res.status(202).json({ result: result })
+      const pins = result.map((pin) => this._service.pinDisplay(pin))
+
+      res.status(202).json([...pins])
     } catch (error: any) {
-      res.status(500).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 
@@ -59,11 +67,17 @@ export class PinController {
 
       const result = await this._service.getPin(id)
 
-      if (!result) throw new Error("The Pin you tried to access doesn't exist.")
+      if (!result)
+        throw {
+          code: 404,
+          message: "The Pin you tried to access doesn't exist.",
+        }
 
-      res.status(202).json({ result: this._service.pinDisplay(result) })
+      res.status(202).json({ ...this._service.pinDisplay(result) })
     } catch (error: any) {
-      res.status(404).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 
@@ -73,17 +87,25 @@ export class PinController {
       const file = req.file
       const token = req.headers.authorization!
 
-      if (!boardName) throw new Error(cannotBlank("board"))
-      if (!title) throw new Error(cannotBlank("title"))
+      if (!boardName) throw { code: 400, message: cannotBlank("board") }
+      if (!title) throw { code: 400, message: cannotBlank("title") }
 
       const user = await this._userService.getUser(token)
 
-      if (!user) throw new Error("The User you tried to access does not exist.")
+      if (!user)
+        throw {
+          code: 404,
+          message:
+            "You don't have credentials, please log in with a valid user account.",
+        }
 
       const board = await this._boardService.getBoard(boardName, user._id)
 
       if (!board)
-        throw new Error("The Board you tried to access does not exist.")
+        throw {
+          code: 404,
+          message: "The Board you tried to access doesn't exist.",
+        }
 
       const result = await this._service.createPin(
         title,
@@ -94,9 +116,11 @@ export class PinController {
         user._id
       )
 
-      res.status(201).json({ result: this._service.pinDisplay(result) })
+      res.status(201).json({ ...this._service.pinDisplay(result) })
     } catch (error: any) {
-      res.status(404).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 
@@ -108,17 +132,31 @@ export class PinController {
 
       const user = await this._userService.getUser(token)
 
-      if (!user) throw new Error("The User you tried to access does not exist.")
+      if (!user)
+        throw {
+          code: 404,
+          message:
+            "You don't have credentials, please log in with a valid user account.",
+        }
 
       const current_pin = await this._service.getPin(id)
 
       if (!current_pin)
-        throw new Error("The Pin you tried to access does not exist.")
+        throw {
+          code: 404,
+          message: "The Pin you tried to access doesn't exist.",
+        }
 
       const board = await this._boardService.getBoard(boardName, user._id)
 
       if (!board && boardName)
-        throw new Error("The Board you tried to access does not exist.")
+        throw {
+          code: 404,
+          message: "The Board you tried to access doesn't exist.",
+        }
+
+      if (user._id.toString() !== current_pin.user._id.toString())
+        throw { code: 401, message: "You don't have authorization." }
 
       const pin: PinFields = {
         title: title ? title.toLocaleLowerCase() : current_pin.title,
@@ -131,9 +169,13 @@ export class PinController {
 
       const result = await this._service.updatePin(id, pin)
 
-      res.status(202).json({ result })
+      const pinResult = this._service.pinDisplay(result!)
+
+      res.status(202).json({ ...pinResult })
     } catch (error: any) {
-      res.status(401).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 
@@ -144,20 +186,31 @@ export class PinController {
 
       const user = await this._userService.getUser(token)
 
-      if (!user) throw new Error("The User you tried to access does not exist.")
+      if (!user)
+        throw {
+          code: 404,
+          message:
+            "You don't have credentials, please log in with a valid user account.",
+        }
 
       const pin = await this._service.getPin(id)
 
-      if (!pin) throw new Error("The Pin you tried to access does not exist.")
+      if (!pin)
+        throw {
+          code: 404,
+          message: "The Pin you tried to access doesn't exist.",
+        }
 
       if (pin.user._id.toString() != user._id.toString())
-        throw new Error("You do not have authorization.")
+        throw { code: 401, message: "You do not have authorization." }
 
       const result = await this._service.deletePin(id, user._id)
 
       res.status(200).json({ result })
     } catch (error: any) {
-      res.status(404).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 }

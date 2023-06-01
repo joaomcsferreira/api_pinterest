@@ -1,5 +1,4 @@
 import { Request, Response } from "express"
-import { ObjectId } from "mongoose"
 import { injectable, inject } from "tsyringe"
 import { CommentService } from "../services/comment.service"
 import { PinService } from "../services/pin.service"
@@ -16,18 +15,30 @@ export class CommentController {
 
   async createComment(req: Request, res: Response) {
     try {
-      const { pinId, text } = req.body
+      const { text } = req.body
+      const pinId = req.params.id as string
       const token = req.headers.authorization!
 
-      if (!text) throw new Error(cannotBlank("comment"))
+      console.log(pinId)
+
+      if (!text) throw { code: 400, message: cannotBlank("comment") }
 
       const pin = await this._pinService.getPin(pinId)
 
-      if (!pin) throw new Error("The User you tried to access does not exist.")
+      if (!pin)
+        throw {
+          code: 404,
+          message: "The Pin you tried to access doesn't exist.",
+        }
 
       const user = await this._userService.getUser(token)
 
-      if (!user) throw new Error("The User you tried to access does not exist.")
+      if (!user)
+        throw {
+          code: 404,
+          message:
+            "You don't have credentials, please log in with a valid user account.",
+        }
 
       const result = await this._service.createComment(text, user._id, pin._id)
 
@@ -35,9 +46,13 @@ export class CommentController {
         await this._pinService.addCommentFromPin(pinId, result._id)
       }
 
-      res.status(200).json({ result })
+      const comment = this._service.commentDisplay(result)
+
+      res.status(202).json({ ...comment })
     } catch (error: any) {
-      res.status(404).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 
@@ -47,13 +62,23 @@ export class CommentController {
 
       const pin = await this._pinService.getPin(id)
 
-      if (!pin) throw new Error("The Pin you tried to access does not exist.")
+      if (!pin)
+        throw {
+          code: 404,
+          message: "The Pin you tried to access doesn't exist.",
+        }
 
       const result = await this._service.getComments(id)
 
-      res.status(200).json({ result })
+      const comments = result.map((comment) =>
+        this._service.commentDisplay(comment)
+      )
+
+      res.status(200).json([...comments])
     } catch (error: any) {
-      res.status(404).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 
@@ -64,27 +89,41 @@ export class CommentController {
 
       const pin = await this._pinService.getPin(id)
 
-      if (!pin) throw new Error("The Pin you tried to access does not exist.")
+      if (!pin)
+        throw {
+          code: 404,
+          message: "The Pin you tried to access doesn't exist.",
+        }
 
       const comment = await this._service.getComment(commentId)
 
       if (!comment)
-        throw new Error("The Comment you tried to access does not exist.")
+        throw {
+          code: 404,
+          message: "The Comment you tried to access doesn't exist.",
+        }
 
       const user = await this._userService.getUser(token)
 
-      if (!user) throw new Error("The User you tried to access does not exist.")
+      if (!user)
+        throw {
+          code: 404,
+          message:
+            "You don't have credentials, please log in with a valid user account.",
+        }
 
-      if (comment.user._id.toString() != user._id.toString())
-        throw new Error("You do not have authorization.")
+      if (comment.user._id.toString() !== user._id.toString())
+        throw { code: 401, message: "You do not have authorization." }
 
       const result = await this._service.deleteComment(commentId, comment.text)
 
       await this._pinService.removeCommentFromPin(id, commentId)
 
-      res.status(200).json({ result })
+      res.status(201).json({ result })
     } catch (error: any) {
-      res.status(404).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 }

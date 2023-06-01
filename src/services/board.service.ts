@@ -38,9 +38,9 @@ export class BoardService {
       user: {
         _id: board.user._id,
         username: board.user.username,
-        firstName: board.user.firstName,
-        lastName: board.user.lastName,
-        avatar: board.user.avatar,
+        firstName: board.user.firstName || "",
+        lastName: board.user.lastName || "",
+        avatar: board.user.avatar || "",
       },
       createdAt: board.createdAt,
     }

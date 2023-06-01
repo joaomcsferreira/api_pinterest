@@ -8,7 +8,7 @@ const permission = (req: Request, res: Response, next: NextFunction) => {
 
   jtw.verify(token, SECRET, (err) => {
     if (err) {
-      return res.status(401).json({ message: "You don't have permission" })
+      return res.status(401).json({ error: "You don't have authorization." })
     }
 
     return next()

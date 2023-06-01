@@ -141,15 +141,19 @@ export class PinService {
         user,
       })
 
-      return result
-    } else throw new Error("pin is required")
+      return result.populate("user", "username firstName lastName avatar")
+    } else throw { code: 400, message: "Pin is required." }
   }
 
   async updatePin(id: string, pin: PinFields): Promise<Pin | null> {
-    const result = await PinRepository.findByIdAndUpdate(id, {
-      ...pin,
-      updatedAt: Date.now(),
-    })
+    const result = await PinRepository.findByIdAndUpdate(
+      id,
+      {
+        ...pin,
+        updatedAt: Date.now(),
+      },
+      { returnDocument: "after" }
+    )
 
     return result
   }
@@ -160,18 +164,19 @@ export class PinService {
     return `The Pin ${id} has been deleted.`
   }
 
-  async addCommentFromPin(id: ObjectId, comment: ObjectId) {
+  async addCommentFromPin(id: string, comment: ObjectId) {
     await PinRepository.findOneAndUpdate(
       { _id: id },
       { $push: { comments: comment } },
-      { new: true }
+      { new: true, returnDocument: "after" }
     )
   }
 
   async removeCommentFromPin(id: string, commentId: string) {
     await PinRepository.findOneAndUpdate(
       { _id: id },
-      { $pull: { comments: { _id: commentId } } }
+      { $pull: { comments: commentId } },
+      { returnDocument: "after" }
     )
   }
 
@@ -179,20 +184,31 @@ export class PinService {
     const pinDisplay = {
       _id: pin._id,
       title: pin.title,
-      description: pin.description,
-      website: pin.website,
+      description: pin.description || "",
+      website: pin.website || "",
       board: pin.board,
       src: pin.src,
       user: {
         _id: pin.user._id,
         username: pin.user.username,
-        firstName: pin.user.firstName,
-        lastName: pin.user.lastName,
-        avatar: pin.user.avatar,
+        firstName: pin.user.firstName || "",
+        lastName: pin.user.lastName || "",
+        avatar: pin.user.avatar || "",
         followers: pin.user.followers,
         following: pin.user.following,
       },
-      comments: pin.comments,
+      comments: pin.comments.map((comment) => ({
+        _id: comment._id,
+        text: comment.text,
+        date: comment.date,
+        user: {
+          _id: comment.user._id,
+          username: comment.user.username,
+          firstName: comment.user.firstName || "",
+          lastName: comment.user.lastName || "",
+          avatar: comment.user.avatar || "",
+        },
+      })),
       createdAt: pin.createdAt,
     }
 

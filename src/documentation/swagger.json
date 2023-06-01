@@ -1,0 +1,1239 @@
+{
+  "openapi": "3.0.0",
+  "info" : {
+    "title": "API pinterest clone",
+    "description": "Pinterest Clone backend in Express Typescript.",
+    "contact": {
+      "email": "joaomcsferreira@gmail.com"
+    },
+    "version": "0.0.3"
+  },
+  "paths": {
+    "/user/{username}": {
+      "get": {
+        "sumary": "Get user profile",
+        "description": "Retrieve the profile of a specific user.",
+        "tags": ["User"],
+        "parameters": [{
+          "in": "path",
+          "name": "username",
+          "schema": {
+            "type": "string"
+          },
+          "required": true
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                 "$ref": "#/components/schemas/Error" 
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/token": {
+      "post": {
+        "sumary": "Post user token credentials",
+        "description": "Authenticates user credentials and returns a JWT token for secure access to protected resources.",
+        "tags": ["User"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                 "$ref": "#/components/schemas/Error" 
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {"type": "string"}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user": {
+      "post": {
+        "sumary": "User Registration.",
+        "description": "Creates a new user account by accepting registration details, such as username, email, and password, and stores the user information securely in the system.",
+        "tags": ["User"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "409": {
+            "description": "Conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                 "$ref": "#/components/schemas/Error" 
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "sumary": "Update User Data",
+        "description": "Updates the information of a specific user, such as username, email, or password, by accepting the updated data in the request and making the necessary modifications in the user's record in the system.",
+        "tags": ["User"],
+        "security": [{
+          "ApiKeyAuth": []
+        }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {  
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {"type": "string"},
+                  "username": {"type": "string"},
+                  "firstName": {"type": "string"},
+                  "lastName": {"type": "string"},
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "409": {
+            "description": "Conflict.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "sumary": "Delete User.",
+        "description": "Removes a specific user and associated data from the system, ensuring the permanent deletion of the user's account, personal information, and any related records or resources.",
+        "tags": ["User"],
+        "security": [{
+          "ApiKeyAuth": []
+        }],
+        "responses": {
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/validate": {
+      "get": {
+        "sumary": "Token Verification",
+        "description": " Verifies the authenticity and validity of a JWT token received in the request, ensuring it has not been tampered with and has not expired, thus allowing secure access to protected resources.",
+        "tags": ["User"],
+        "security": [{
+          "ApiKeyAuth": []
+        }],
+        "responses": {
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/follow": {
+      "put": {
+        "sumary": "Update Follower Count",
+        "description": "Updates the follower count of a specific user by incrementing or decrementing the number of followers based on user actions, such as following or unfollowing, ensuring the accurate representation of the user's current number of followers in the system.",
+        "tags": ["User"],
+        "security": [{
+          "ApiKeyAuth": []
+        }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "usernameToFollow": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/unfollow": {
+      "put": {
+        "sumary": "Update Follower Count",
+        "description": "Updates the follower count of a specific user by incrementing or decrementing the number of followers based on user actions, such as following or unfollowing, ensuring the accurate representation of the user's current number of followers in the system.",
+        "tags": ["User"],
+        "security": [{
+          "ApiKeyAuth": []
+        }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "usernameToUnfollow": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/board": {
+      "post": {
+        "sumary": "Create Board",
+        "description": "Creates a new board for a user, allowing them to organize and categorize their content. This route accepts the necessary information, such as the board name and any additional details, and stores it in the system, enabling the user to manage and customize their boards effectively.",
+        "tags": ["Board"],
+        "security": [{
+          "ApiKeyAuth": []
+        }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Board"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/boards/{username}": {
+      "get": {
+        "sumary": "Get Board",
+        "description": "Retrieves the information and content of a specific board for a user, providing access to the board's name, description, and any associated data. This route allows users to view and interact with their boards, facilitating organization and retrieval of stored content.",
+        "tags": ["Board"],
+        "security": [{
+          "ApiKeyAuth": []
+        }],
+        "parameters": [{
+          "in": "path",
+          "name": "username",
+          "schema": {
+            "type": "string"
+          },
+          "required": true
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "OK.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {"$ref": "#/components/schemas/Board"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/board/{name}": {
+      "delete": {
+        "sumary": "Delete Board",
+        "description": "Deletes a specific board belonging to a user, removing all associated content and configurations. This route ensures the permanent removal of the board and its related data from the system, allowing users to effectively manage their boards by deleting those they no longer need or wish to maintain.",
+        "tags": ["Board"],
+        "security": [{
+          "ApiKeyAuth": []
+        }],
+        "parameters": [{
+          "in": "path",
+          "name": "name",
+          "schema": {
+            "type": "string"
+          },
+          "required": true
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pins": {
+      "get": {
+        "sumary": "Get All Pins",
+        "description": "Retrieves all pins from the system, providing users with access to a comprehensive list of pinned content. This route allows users to explore and retrieve all pins, facilitating easy browsing and retrieval of stored content across the platform.",
+        "tags": ["Pin"],
+        "parameters": [{
+            "in": "query",
+            "name": "user",
+            "schema": {
+              "type": "string"
+            }
+          },{
+            "in": "query",
+            "name": "board",
+            "schema": {
+              "type": "string"
+            }
+          },{
+            "in": "query",
+            "name": "type",
+            "schema": {
+              "type": "string"
+            }
+          },{
+            "in": "query",
+            "name": "total",
+            "schema": {
+              "type": "string"
+            }
+          }, {
+            "in": "query",
+            "name": "page",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {"$ref": "#/components/schemas/Pin"}
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pin/{id}": {
+      "get": {
+        "sumary": "Get Specific Pin",
+        "description": "Retrieves a specific pin based on its unique identifier, providing users with access to detailed information and content associated with that pin. This route allows users to retrieve specific pins of interest, facilitating targeted access to individual pieces of content within the platform.",
+        "tags": ["Pin"],
+        "parameters": [{
+          "in": "path",
+          "name": "id",
+          "schema": {
+            "type": "string"
+          },
+          "required": true
+        }],
+        "responses": {
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Pin"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "sumary": "Update Pin",
+        "description": "Updates the information and content of a specific pin for a user. This route allows users to modify the title, description, or associated media of a pin by providing the updated data in the request. The system then updates the pin record, ensuring that the changes are reflected accurately in the user's collection.",
+        "tags": ["Pin"],
+        "security": [{
+          "ApiKeyAuth": []
+        }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {"type": "string"},
+                  "descripition": {"type": "string"},
+                  "website": {"type": "string"},
+                  "board": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "parameters": [{
+          "in": "path",
+          "name": "id",
+          "schema": {
+            "type": "string"
+          },
+          "required": true
+        }],
+        "responses": {
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Pin"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "sumary": "Delete Pin",
+        "description": "Deletes a specific pin belonging to a user, removing it from their collection and permanently deleting all associated data and content. This route ensures the complete removal of the pin from the system, allowing users to effectively manage their pins by deleting those they no longer need or wish to keep.",
+        "tags": ["Pin"],
+        "security": [{
+          "ApiKeyAuth": []
+        }],
+        "parameters": [{
+          "in": "path",
+          "name": "id",
+          "schema": {
+            "type": "string"
+          },
+          "required": true
+        }],
+        "responses": {
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Pin"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pin": {
+      "post": {
+        "sumary": "Get Specific Pin",
+        "description": "Retrieves a specific pin based on its unique identifier, providing users with access to detailed information and content associated with that pin. This route allows users to retrieve specific pins of interest, facilitating targeted access to individual pieces of content within the platform.",
+        "tags": ["Pin"],
+        "security": [{
+          "ApiKeyAuth": []
+        }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "title": {"type": "string"},
+                  "board": {"type": "string"},
+                  "descripition": {"type": "string"},
+                  "website": {"type": "string"},
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Pin"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pin/{id}/comment": {
+      "post": {
+        "sumary": "Create Comment",
+        "description": "Creates a new comment for a specific pin, allowing users to interact and provide feedback on the content. This route accepts the necessary information, such as the comment text and the ID of the pin it relates to, and stores it in the system, enabling users to engage in discussions and share their thoughts on the pin.",
+        "tags": ["Comment"],
+        "security": [{
+          "ApiKeyAuth": []
+        }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties" : {
+                  "text": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "parameters": [{
+          "in": "path",
+          "name": "id",
+          "schema": {
+            "type": "string"
+          },
+          "required": true
+        }],
+        "responses": {
+          "404": {
+            "description": "Not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Comment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pin/{id}/comments": {
+      "get": {
+        "sumary": "Get Pin Comments",
+        "description": "Retrieves all comments associated with a specific pin, providing users with access to the comments made by other users on that pin.",
+        "tags": ["Comment"],
+        "parameters": [{
+          "in": "path",
+          "name": "id",
+          "schema": {
+            "type": "string"
+          },
+          "required": true
+        }],
+        "responses": {
+          "400": {
+            "description": "Bad Request.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "OK.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Comment"
+                }
+              }
+            }
+          }
+        }
+      }
+    }, 
+    "/pin/{id}/comment/{commentId}": {
+      "delete": {
+        "sumary": "Delete Comment",
+        "description": "Deletes a specific comment associated with a pin, removing it from the system and effectively eliminating its presence within the pin's comment section.",
+        "tags": ["Comment"],
+        "security": [{
+          "ApiKeyAuth": []
+        }],
+        "parameters": [{
+          "in": "path",
+          "name": "id",
+          "schema": {
+            "type": "string"
+          },
+          "required": true
+        }, {
+          "in": "path",
+          "name": "commentId",
+          "schema": {
+            "type": "string"
+          },
+          "required": true
+        }],
+        "responses": {
+          "404": {
+            "description": "Not Found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Accepted.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "$ref": "#/components/schemas/Result"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {"type": "string"}
+        }
+      },
+      "Result": {
+        "type": "object",
+        "properties": {
+          "result": {"type": "string"}
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "_id": {"type": "string"},
+          "email": {"type": "string"},
+          "username": {"type": "string"},
+          "firstName": {"type": "string"},
+          "lastName": {"type": "string"},
+          "avatar": {"type": "string"},
+          "followers": {
+            "type": "array",
+            "items": {"$ref": "#/components/schemas/User"}
+          },
+          "following": {
+              "type": "array",
+              "items": {"$ref": "#/components/schemas/User"}
+          },
+          "createdAt": {"type":  "string"}
+        }
+      },
+      "Board": {
+        "type": "object",
+        "properties": {
+          "_id": {"type": "string"},
+          "name": {"type": "string"},
+          "user": {
+            "type": "object",
+            "properties": {
+              "_id": {"type": "string"},
+              "username": {"type": "string"},
+              "firstName": {"type": "string"},
+              "lastName": {"type": "string"},
+              "avatar": {"type": "string"}
+            }
+          },
+          "createdAt": {"type": "string"}
+        }
+      },
+      "Pin": {
+        "type": "object",
+        "properties": {
+          "_id": {"type": "string"},
+          "src": {
+            "type": "object",
+            "properties": {
+              "high": {"type": "string"},
+              "medium": {"type": "string"},
+              "low": {"type": "string"}
+            }
+          },
+          "title": {"type": "string"},
+          "descripition": {"type": "string"},
+          "website": {"type": "string"},
+          "board": {"type": "string"},
+          "user": {
+            "type": "object", 
+            "properties": {
+              "_id": {"type": "string"},
+              "username": {"type": "string"},
+              "firstName": {"type": "string"},
+              "lastName": {"type": "string"},
+              "avatar": {"type": "string"}
+            }
+          },
+          "comments": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Comment"
+            },
+            "createdAt": {"type": "string"}
+          }
+        }
+      },
+      "Comment": {
+        "type": "object",
+        "properties": {
+          "_id": {"type": "string"},
+          "text": {"type": "string"},
+          "date": {"type": "string"},
+          "user": {
+            "type": "object", 
+            "properties": {
+              "_id": {"type": "string"},
+              "username": {"type": "string"},
+              "firstName": {"type": "string"},
+              "lastName": {"type": "string"},
+              "avatar": {"type": "string"}
+            }
+          },
+          "pin": {"type": "string"},
+          "createdAt": {"type": "string"}
+        }
+      }
+    },
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Authorization"
+      }
+    }
+  }
+}

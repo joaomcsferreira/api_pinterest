@@ -32,7 +32,7 @@ userRouter
   )
 
 userRouter
-  .route("/user/:id")
+  .route("/user")
   .delete(permission, (req: Request, res: Response) =>
     user.deleteUser(req, res)
   )

@@ -1,8 +1,6 @@
 import { Request, Response } from "express"
 import { injectable, inject } from "tsyringe"
 
-import crypto from "crypto"
-
 import { UserService } from "../services/user.service"
 import {
   createToken,
@@ -12,7 +10,6 @@ import {
 } from "../helper/encryption"
 
 import { cannotBlank } from "../helper/validationFields"
-import { getStorageOptions } from "../helper/multer"
 
 interface validationFieldsProps {
   type: "email" | "password" | "username"
@@ -30,11 +27,16 @@ export class UserController {
       const result = await this._service.getProfile(username)
 
       if (!result)
-        throw new Error("The User you tried to access does not exist.")
+        throw {
+          code: 404,
+          message: "The User you tried to access doesn't exist.",
+        }
 
-      res.status(202).json({ result: this._service.userDisplay(result) })
+      res.status(202).json({ ...this._service.userDisplay(result) })
     } catch (error: any) {
-      res.status(404).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 
@@ -42,28 +44,36 @@ export class UserController {
     try {
       const { email, password } = req.body
 
-      if (!email) throw new Error(cannotBlank("email"))
-      if (!password) throw new Error(cannotBlank("password"))
+      if (!email) throw { code: 400, message: cannotBlank("email") }
+      if (!password) throw { code: 400, message: cannotBlank("password") }
 
       const user = await this._service.userExist({
         type: "email",
         payload: { email: email.toLocaleLowerCase() },
       })
 
-      if (!user) throw new Error("The User you tried to access does not exist.")
+      if (!user)
+        throw {
+          code: 404,
+          message: "The User you tried to access doesn't exist.",
+        }
 
       const passwordIsValid = await decryptPassword(password, user.password)
 
       if (!passwordIsValid)
-        throw new Error(
-          "The password you entered is incorrect. Please try again or reset your password if needed."
-        )
+        throw {
+          code: 400,
+          message:
+            "The password you entered is incorrect. Please try again or reset your password if needed.",
+        }
 
       const token = createToken(email, user.username, user._id)
 
-      res.status(201).json({ result: token })
+      res.status(201).json({ token })
     } catch (error: any) {
-      res.status(404).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 
@@ -71,8 +81,8 @@ export class UserController {
     try {
       const { email, password } = req.body
 
-      if (!email) throw new Error(cannotBlank("email"))
-      if (!password) throw new Error(cannotBlank("password"))
+      if (!email) throw { code: 400, message: cannotBlank("email") }
+      if (!password) throw { code: 400, message: cannotBlank("password") }
 
       const emailIsValid = await this.validationFields({
         type: "email",
@@ -84,8 +94,8 @@ export class UserController {
         payload: password,
       })
 
-      if (emailIsValid) throw new Error(emailIsValid)
-      if (passwordIsValid) throw new Error(passwordIsValid)
+      if (emailIsValid) throw { code: 400, message: emailIsValid }
+      if (passwordIsValid) throw { code: 400, message: passwordIsValid }
 
       const emailExist = await this._service.userExist({
         type: "email",
@@ -93,9 +103,11 @@ export class UserController {
       })
 
       if (emailExist)
-        throw new Error(
-          "The email address you entered is already associated with an account."
-        )
+        throw {
+          code: 409,
+          message:
+            "The email address you entered is already associated with an account.",
+        }
 
       let username = email.split("@")[0].toLocaleLowerCase()
 
@@ -117,9 +129,11 @@ export class UserController {
         passwordEncrypt
       )
 
-      res.status(201).json({ result: this._service.userDisplay(result) })
+      res.status(201).json({ ...this._service.userDisplay(result) })
     } catch (error: any) {
-      res.status(406).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 
@@ -138,8 +152,9 @@ export class UserController {
         payload: username,
       })
 
-      if (emailIsValid && email) throw new Error(emailIsValid)
-      if (usernameIsValid && username) throw new Error(usernameIsValid)
+      if (emailIsValid && email) throw { code: 400, message: emailIsValid }
+      if (usernameIsValid && username)
+        throw { code: 400, message: usernameIsValid }
 
       const token = req.headers.authorization!
 
@@ -149,6 +164,13 @@ export class UserController {
         type: "id",
         payload: { id },
       })
+
+      if (!current_user)
+        throw {
+          code: 404,
+          message:
+            "You don't have credentials, please log in with a valid user account.",
+        }
 
       const usernameExist = await this._service.userExist({
         type: "username",
@@ -160,17 +182,18 @@ export class UserController {
       })
 
       if (emailExist && emailExist.email !== current_user?.email)
-        throw new Error(
-          "The email address you entered is already associated with an account."
-        )
+        throw {
+          code: 409,
+          message:
+            "The email address you entered is already associated with an account.",
+        }
 
       if (usernameExist && usernameExist.username !== current_user?.username)
-        throw new Error(
-          "The username you entered is already associated with an account."
-        )
-
-      if (!current_user)
-        throw new Error("The User you tried to access doesn't exist.")
+        throw {
+          code: 409,
+          message:
+            "The username you entered is already associated with an account.",
+        }
 
       const user = {
         _id: id,
@@ -184,45 +207,39 @@ export class UserController {
         lastName: lastName
           ? lastName.toLocaleLowerCase()
           : current_user?.lastName,
-        avatar: current_user?.avatar,
+        avatar: current_user?.avatar || "",
       }
 
       const result = await this._service.updateUser(id, user, file)
 
-      if (!result)
-        throw new Error("The User you tried to access doesn't exist.")
-
-      res.status(202).json({ result: this._service.userDisplay(result) })
+      res.status(202).json({ ...this._service.userDisplay(result) })
     } catch (error: any) {
-      res.status(406).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 
   async deleteUser(req: Request, res: Response) {
     try {
-      const { id } = req.params
       const token = req.headers.authorization!
 
-      const user = await this._service.userExist({
-        type: "id",
-        payload: { id },
-      })
+      const user = await this._service.getUser(token)
 
-      if (!user) throw new Error("The User you tried to access does not exist.")
+      if (!user)
+        throw {
+          code: 404,
+          message:
+            "You don't have credentials, please log in with a valid user account.",
+        }
 
-      const currentUser = await this._service.getUser(token)
-
-      if (!currentUser)
-        throw new Error("The User you tried to access does not exist.")
-
-      if (user.username != currentUser.username)
-        throw new Error("You do not have authorization.")
-
-      const result = await this._service.deleteUser(id)
+      const result = await this._service.deleteUser(user!.id)
 
       res.status(200).json({ result })
     } catch (error: any) {
-      res.status(404).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 
@@ -237,90 +254,114 @@ export class UserController {
         payload: { id },
       })
 
-      if (!user) throw new Error("The User you tried to access does not exist.")
+      if (!user)
+        throw {
+          code: 404,
+          message:
+            "You don't have credentials, please log in with a valid user account.",
+        }
 
-      res.status(200).json({ result: this._service.userDisplay(user) })
+      res.status(200).json({ ...this._service.userDisplay(user) })
     } catch (error: any) {
-      res.status(404).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 
   async followUser(req: Request, res: Response) {
     try {
-      const { usernameFollowing } = req.body
+      const { usernameToFollow } = req.body
       const token = req.headers.authorization!
 
-      const userFollowing = await this._service.userExist({
+      const userToFollow = await this._service.userExist({
         type: "username",
-        payload: { username: usernameFollowing },
+        payload: { username: usernameToFollow },
       })
 
-      if (!userFollowing)
-        throw new Error(
-          `The ${usernameFollowing} you tried to access does not exist.`
-        )
+      if (!userToFollow)
+        throw {
+          code: 404,
+          message: `The user ${usernameToFollow} that you tried to access doesn't exist.`,
+        }
 
-      const userFollowed = await this._service.getUser(token)
+      const user = await this._service.getUser(token)
 
-      if (!userFollowed)
-        throw new Error("The userFollowed you tried to access does not exist.")
+      if (!user)
+        throw {
+          code: 404,
+          message:
+            "You don't have credentials, please log in with a valid user account.",
+        }
 
-      if (userFollowing.username === userFollowed.username)
-        throw new Error("User cannot follow themselves.")
+      if (userToFollow.username === user!.username)
+        throw { code: 400, message: "User cannot follow themselves." }
 
       if (
-        userFollowed.following.filter(
-          (followingUser) => followingUser.username === userFollowing.username
+        user!.following.filter(
+          (followingUser) => followingUser.username === userToFollow.username
         ).length > 0
       )
-        throw new Error("User is already following this account.")
+        throw { code: 400, message: "User is already following this account." }
 
-      const result = await this._service.followUser(
-        userFollowing._id,
-        userFollowed._id
-      )
+      const result = await this._service.followUser(userToFollow._id, user!._id)
 
-      res.status(200).json({ result: this._service.userDisplay(result) })
+      res.status(200).json({ ...this._service.userDisplay(result) })
     } catch (error: any) {
-      res.status(404).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 
   async unfollowUser(req: Request, res: Response) {
     try {
-      const { usernameFollowing } = req.body
+      const { usernameToUnfollow } = req.body
       const token = req.headers.authorization!
 
-      const userFollowing = await this._service.userExist({
+      const userToUnfollow = await this._service.userExist({
         type: "username",
-        payload: { username: usernameFollowing },
+        payload: { username: usernameToUnfollow },
       })
 
-      if (!userFollowing)
-        throw new Error("The userFollowing you tried to access does not exist.")
+      if (!userToUnfollow)
+        throw {
+          code: 404,
+          message: `The user ${usernameToUnfollow} that you tried to access doesn't exist.`,
+        }
 
-      const userFollowed = await this._service.getUser(token)
+      const user = await this._service.getUser(token)
 
-      if (!userFollowed)
-        throw new Error("The userFollowed you tried to access does not exist.")
+      if (!user)
+        throw {
+          code: 404,
+          message:
+            "You don't have credentials, please log in with a valid user account.",
+        }
+
+      if (user!.username === usernameToUnfollow)
+        throw { code: 400, message: "User cannot unfollow themselves." }
 
       if (
-        userFollowed.following.filter(
-          (followingUser) => followingUser.username === userFollowing.username
+        user!.following.filter(
+          (followingUser) => followingUser.username === userToUnfollow.username
         ).length === 0
       )
-        throw new Error(
-          "User cannot unfollow an account they were not following."
-        )
+        throw {
+          code: 400,
+          message: "User cannot unfollow an account they were not following.",
+        }
 
       const result = await this._service.unfollowUser(
-        userFollowing._id,
-        userFollowed._id
+        userToUnfollow._id,
+        user!._id
       )
 
-      res.status(200).json({ result: this._service.userDisplay(result) })
+      res.status(200).json({ ...this._service.userDisplay(result) })
     } catch (error: any) {
-      res.status(404).json({ error: error.message || error.toString() })
+      res
+        .status(error?.code || 500)
+        .json({ error: error.message || error.toString() })
     }
   }
 
