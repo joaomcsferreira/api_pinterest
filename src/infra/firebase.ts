@@ -1,16 +1,21 @@
 import { initializeApp } from "firebase/app"
 import { getStorage } from "firebase/storage"
 
-// Your web app's Firebase configuration
+const API_KEY = process.env.API_KEY as string
+const AUTH_DOMAIN = process.env.AUTH_DOMAIN as string
+const PROJECT_ID = process.env.PROJECT_ID as string
+const STORAGE_BUCKET = process.env.STORAGE_BUCKET as string
+const MESSAGING_SENDER_ID = process.env.MESSAGING_SENDER_ID as string
+const APP_ID = process.env.APP_ID as string
+
 const firebaseConfig = {
-  apiKey: "AIzaSyCsPuXvyZ9RCh-F9hBbhNlLO-4UR4_kJ6o",
-  authDomain: "pinterest-cloud.firebaseapp.com",
-  projectId: "pinterest-cloud",
-  storageBucket: "pinterest-cloud.appspot.com",
-  messagingSenderId: "435860486497",
-  appId: "1:435860486497:web:255c847d3b2db42b48ad20",
+  apiKey: API_KEY,
+  authDomain: AUTH_DOMAIN,
+  projectId: PROJECT_ID,
+  storageBucket: STORAGE_BUCKET,
+  messagingSenderId: MESSAGING_SENDER_ID,
+  appId: APP_ID,
 }
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig)
 export const storage = getStorage(app)
