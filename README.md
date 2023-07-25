@@ -1,8 +1,6 @@
 # About
 
-```
-Pinterest Clone backend in Express Typescript.
-```
+Pinterest Clone backend in Express Typescript. You can access it by following this [API Pinterest](https://pinterest-clone-api.onrender.com/).
 
 <img alt="express-typescript" src="https://geekyants.github.io/express-typescript/public/images/express-typescript.png" height="50%" width="60%">
 
